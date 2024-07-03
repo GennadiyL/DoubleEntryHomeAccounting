@@ -4,8 +4,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 public interface IReferenceDataElementService<TGroup, TElement, in TParam> : IReferenceDataService<TElement, TParam>, IElementService<TGroup, TElement>
-    where TGroup : IEntity, IFavoriteEntity, IOrderedEntity, IGroupEntity<TGroup, TElement>
-    where TElement : IEntity, IFavoriteEntity, IOrderedEntity, IElementEntity<TGroup>
+    where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
+    where TElement : IReferenceDataElementEntity<TGroup>
     where TParam : IParam
 {
 }

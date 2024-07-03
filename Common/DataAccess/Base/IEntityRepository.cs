@@ -1,204 +1,42 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Model;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 
 public interface IEntityRepository<T>
     where T : IEntity
 {
-    #region GetById
-    Task<T> GetById(Guid id);
-    Task<T> GetById<TP1>(
+    Task<T> GetById(
         Guid id, 
-        Func<T, TP1> include1)
-        where TP1 : IEntity;
-    Task<T> GetById<TP1, TP2>(
-        Guid id, 
-        Func<T, TP1> include1, 
-        Func<T, TP2> include2)
-        where TP1 : IEntity
-        where TP2 : IEntity;
-    Task<T> GetById<TP1, TP2, TP3, TP4>(
-        Guid id, 
-        Func<T, TP1> include1, 
-        Func<T, TP2> include2, 
-        Func<T, TP3> include3,
-        Func<T, TP3> include4)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity
-        where TP4 : IEntity;
-    #endregion
+        Include<T> include = null);
 
-    #region GetFirstOrDefault
     Task<T> GetFirstOrDefault(
         Func<T, bool> predicate = null, 
+        Include<T> include = null, 
         Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null);
-    Task<T> GetFirstOrDefault<TP1>(
-        Func<T, bool> predicate, 
-        Func<T, TP1> include1, 
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity;
-    Task<T> GetFirstOrDefault<TP1, TP2>(
-        Func<T, bool> predicate, 
-        Func<T, TP1> include1, 
-        Func<T, TP2> include2, 
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity;
-    Task<T> GetFirstOrDefault<TP1, TP2, TP3>(
-        Func<T, bool> predicate, 
-        Func<T, TP1> include1, 
-        Func<T, TP2> include2, 
-        Func<T, TP3> include3, 
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity;
-    Task<T> GetFirstOrDefault<TP1, TP2, TP3, TP4>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<T, TP4> include4,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity
-        where TP4 : IEntity;
-    #endregion
 
-    #region Where
     Task<ICollection<T>> Where(
         Func<T, bool> predicate = null,
+        Include<T> include = null,
         Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null);
-    Task<ICollection<T>> Where<TP1>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2, TP3>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2, TP3, TP4>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<T, TP4> include4,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity
-        where TP4 : IEntity;
-    #endregion
-
-    #region Where (Page)
 
     Task<ICollection<T>> Where(
-        int take, 
+        int take,
         int skip,
         Func<T, bool> predicate = null,
+        Include<T> include = null,
         Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null);
-    Task<ICollection<T>> Where<TP1>(
-        int take,
-        int skip,
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2>(
-        int take,
-        int skip,
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2, TP3>(
-        int take,
-        int skip,
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity;
-    Task<ICollection<T>> Where<TP1, TP2, TP3, TP4>(
-        int take,
-        int skip,
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<T, TP4> include4,
-        Func<ICollection<T>, IOrderedEnumerable<T>> orderBy = null)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity
-        where TP4 : IEntity;
-    #endregion
-
-    #region GetAll
-
+    
     Task<ICollection<T>> GetAll();
 
-    #endregion
-
-    #region GetCount
-    Task<int> GetCount(
-        Func<T, bool> predicate = null);
     Task<int> GetCount<TP1>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1)
-        where TP1 : IEntity;
-    Task<int> GetCount<TP1, TP2>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2)
-        where TP1 : IEntity
-        where TP2 : IEntity;
-    Task<int> GetCount<TP1, TP2, TP3>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity;
-    Task<int> GetCount<TP1, TP2, TP3, TP4>(
-        Func<T, bool> predicate,
-        Func<T, TP1> include1,
-        Func<T, TP2> include2,
-        Func<T, TP3> include3,
-        Func<T, TP4> include4)
-        where TP1 : IEntity
-        where TP2 : IEntity
-        where TP3 : IEntity
-        where TP4 : IEntity;
-    #endregion
+        Func<T, bool> predicate = null,
+        Include<T> include = null);
 
-    #region CRUD
-
-    Task<T> Save(T entity);
-    Task<IList<T>> Save(ICollection<T> entities);
+    Task<T> Add(T entity);
+    Task<IList<T>> Add(ICollection<T> entities);
+    Task<T> Update(T entity);
+    Task<IList<T>> Update(ICollection<T> entities);
     Task<T> Delete(Guid id);
     Task<IList<T>> Delete(ICollection<Guid> ids);
-
-    #endregion
 }

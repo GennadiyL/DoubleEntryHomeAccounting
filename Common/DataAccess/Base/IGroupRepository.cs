@@ -6,6 +6,8 @@ public interface IGroupRepository<TGroup, TElement>
     where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
     where TElement : IReferenceDataElementEntity<TGroup>
 {
+    Task<TGroup> GetByIdWithElements(Guid id);
+
     Task<ICollection<TGroup>> GetByName(string name);
     Task<ICollection<TGroup>> GetByParentId(Guid? parentId);
     Task<ICollection<TGroup>> GetByParentIdAndName(Guid? parentId, string name);
