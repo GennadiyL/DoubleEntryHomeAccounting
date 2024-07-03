@@ -1,7 +1,8 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 
-public interface ICorrespondentRepository : IElementEntityRepository<Correspondent>
+public interface ICorrespondentRepository : IElementEntityRepository<CorrespondentGroup, Correspondent>
 {
 }

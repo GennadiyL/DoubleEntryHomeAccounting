@@ -2,11 +2,18 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 
-public interface IGroupRepository<T>
-    where T : IEntity
+public interface IGroupRepository<TGroup, TElement>
+    where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
+    where TElement : IReferenceDataElementEntity<TGroup>
 {
-    Task <List<T>> GetByName(string name);
-    Task<int> GetMaxOrder();
-    Task<int> GetCount();
-    Task<List<T>> GetList();
+    Task<ICollection<TGroup>> GetByName(string name);
+    Task<ICollection<TGroup>> GetByParentId(Guid? parentId);
+    Task<ICollection<TGroup>> GetByParentIdAndName(Guid? parentId, string name);
+
+    Task<ICollection<TGroup>> GetByNameWithChildren(string name);
+    Task<ICollection<TGroup>> GetByParentIdWithChildren(Guid? parentId);
+    Task<ICollection<TGroup>> GetByParentIdAndNameWithChildren(Guid? parentId, string name);
+
+    Task<int> GetMaxOrder(Guid? parentId);
+    Task<int> GetCount(Guid? parentId);
 }
