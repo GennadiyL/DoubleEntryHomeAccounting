@@ -7,8 +7,4 @@
 	<RootNamespace>GLSoft.DoubleEntryHomeAccounting.Common</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="DataAccess\Auxiliary\" />
-  </ItemGroup>
-
 </Project>

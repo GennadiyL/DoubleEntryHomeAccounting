@@ -1,7 +1,5 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
-using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;

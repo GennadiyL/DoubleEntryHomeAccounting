@@ -40,7 +40,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         Guard.CheckParamNameForNull(param);
 
         TGroup group = await Getter.GetEntityById(_groupRepository, param.GroupId);
-        await Guard.CheckGroupWithSameName(_groupRepository, group.Id, Guid.Empty, param.Name);
+        await Guard.CheckElementWithSameName(_elementRepository, group.Id, Guid.Empty, param.Name);
 
         TElement addedEntity = new TElement
         {
