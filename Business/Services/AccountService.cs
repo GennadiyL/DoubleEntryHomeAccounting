@@ -21,7 +21,6 @@ public class AccountService : IAccountService
     private readonly ITemplateRepository _templateRepository;
     private readonly ITransactionRepository _transactionRepository;
 
-
     public AccountService(
         IUnitOfWorkFactory unitOfWorkFactory,
         IAccountGroupRepository accountGroupRepository,
@@ -52,7 +51,7 @@ public class AccountService : IAccountService
         Guard.CheckParamNameForNull(param);
 
         AccountGroup group = await Getter.GetEntityById(_accountGroupRepository, param.GroupId);
-        await Guard.CheckGroupWithSameName(_accountGroupRepository, group.Id, Guid.Empty, param.Name);
+        await Guard.CheckElementWithSameName(_accountRepository, group.Id, Guid.Empty, param.Name);
 
         Account addedEntity = new Account
         {
@@ -186,7 +185,6 @@ public class AccountService : IAccountService
         }
 
         await unitOfWork.SaveChanges();
-
     }
 
     public async Task CombineElements(Guid primaryId, Guid secondaryId)

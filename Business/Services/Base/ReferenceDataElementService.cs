@@ -12,7 +12,7 @@ namespace Business.Services.Base;
 
 public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IReferenceDataElementService<TGroup, TElement, TParam>
     where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
-    where TElement : class, IReferenceDataElementEntity<TGroup>, new()
+    where TElement : class, IReferenceDataElementEntity<TGroup, TElement>, new()
     where TParam : class, INamedParam, IFavoriteParam, IElementParam
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;

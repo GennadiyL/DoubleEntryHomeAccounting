@@ -11,10 +11,20 @@ namespace Business.Services;
 public class TemplateService : ITemplateService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+    private readonly ITemplateRepository _templateRepository;
+    private readonly ITemplateGroupRepository _templateGroupRepository;
+    private readonly IAccountRepository _accountRepository;
 
-    public TemplateService(IUnitOfWorkFactory unitOfWorkFactory)
+    public TemplateService(
+        IUnitOfWorkFactory unitOfWorkFactory, 
+        ITemplateRepository templateRepository, 
+        ITemplateGroupRepository templateGroupRepository, 
+        IAccountRepository accountRepository)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
+        _templateRepository = templateRepository;
+        _templateGroupRepository = templateGroupRepository;
+        _accountRepository = accountRepository;
     }
 
     public async Task<Guid> Add(TemplateParam param)
@@ -23,33 +33,26 @@ public class TemplateService : ITemplateService
 
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
-        if (param.Entries == null || param.Entries.Count < 2)
-        {
-            throw new ArgumentException("Invalid amount of Transaction Entries: amount must be more than 1");
-        }
+        CheckEntries(param);
 
-        ITemplateRepository templateRepository = await unitOfWork.GetRepository<ITemplateRepository>();
-        ITemplateGroupRepository templateGroupRepository = await unitOfWork.GetRepository<ITemplateGroupRepository>();
-        IAccountRepository accountRepository = await unitOfWork.GetRepository<IAccountRepository>();
+        List<TemplateEntry> entries = await CreateEntries(param);
 
-        List<TemplateEntry> entries = await CreateEntries(param, accountRepository);
+        TemplateGroup group = await Getter.GetEntityById(_templateGroupRepository, param.GroupId);
+        await Guard.CheckElementWithSameName(_templateRepository, group.Id, Guid.Empty, param.Name);
 
-        TemplateGroup parent = await Getter.GetEntityById(templateGroupRepository.Get, param.ParentId);
-        await Guard.CheckEntityWithSameName(templateRepository, parent.Id, Guid.Empty, param.Name);
-
-        var addedEntity = new Template
+        Template addedEntity = new Template
         {
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order = await templateRepository.GetMaxOrder(parent.Id) + 1
+            Order = await _templateRepository.GetMaxOrder(group.Id) + 1
         };
 
         addedEntity.Entries.AddRange(entries);
 
-        parent.Children.Add(addedEntity);
-        addedEntity.Parent = parent;
-        await templateRepository.Add(addedEntity);
+        group.Elements.Add(addedEntity);
+        addedEntity.Group = group;
+        await _templateRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
@@ -62,19 +65,12 @@ public class TemplateService : ITemplateService
 
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
+        CheckEntries(param);
 
-        if (param.Entries == null || param.Entries.Count < 2)
-        {
-            throw new ArgumentException("Template entity is not correct: number of Entries must be more or equal 2");
-        }
+        List<TemplateEntry> entries = await CreateEntries(param);
 
-        ITemplateRepository templateRepository = await unitOfWork.GetRepository<ITemplateRepository>();
-        IAccountRepository accountRepository = await unitOfWork.GetRepository<IAccountRepository>();
-
-        List<TemplateEntry> entries = await CreateEntries(param, accountRepository);
-
-        var updatedEntity = await Getter.GetEntityById(templateRepository.Get, entityId);
-        await Guard.CheckEntityWithSameName(templateRepository, updatedEntity.Parent.Id, entityId, param.Name);
+        var updatedEntity = await Getter.GetEntityById(_templateRepository, entityId);
+        await Guard.CheckElementWithSameName(_templateRepository, updatedEntity.Group.Id, entityId, param.Name);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
@@ -82,7 +78,7 @@ public class TemplateService : ITemplateService
         updatedEntity.Entries.Clear();
         updatedEntity.Entries.AddRange(entries);
 
-        await templateRepository.Update(updatedEntity);
+        await _templateRepository.Update(updatedEntity);
 
         await unitOfWork.SaveChanges();
     }
@@ -91,35 +87,14 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        ITemplateRepository templateRepository = await unitOfWork.GetRepository<ITemplateRepository>();
-        ITemplateGroupRepository templateGroupRepository = await unitOfWork.GetRepository<ITemplateGroupRepository>();
+        Template deletedEntity = await Getter.GetElementById(_templateRepository, entityId);
+        TemplateGroup group = await _templateRepository.GetByGroupId(deletedEntity.Group.Id);
 
-        Template deletedEntity = await Getter.GetEntityById(templateRepository.Get, entityId);
-        await templateRepository.LoadParent(deletedEntity);
-        TemplateGroup parent = deletedEntity.Parent;
-        await templateGroupRepository.LoadChildren(parent);
+        group.Elements.Remove(deletedEntity);
+        await _templateRepository.Delete(deletedEntity.Id);
 
-        parent.Children.Remove(deletedEntity);
-        await templateRepository.Delete(deletedEntity);
-
-        OrderingUtils.Reorder(parent.Children);
-        await templateRepository.UpdateList(parent.Children);
-
-        await unitOfWork.SaveChanges();
-    }
-
-    public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
-    {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
-
-        ITemplateRepository templateRepository = await unitOfWork.GetRepository<ITemplateRepository>();
-
-        Template template = await Getter.GetEntityById(templateRepository.Get, entityId);
-        if (template.IsFavorite != isFavorite)
-        {
-            template.IsFavorite = isFavorite;
-            await templateRepository.Update(template);
-        }
+        OrderingUtils.Reorder(group.Elements);
+        await _templateRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -128,53 +103,63 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        ITemplateRepository templateRepository =  await unitOfWork.GetRepository<ITemplateRepository>();
-        ITemplateGroupRepository templateGroupRepository = await unitOfWork.GetRepository<ITemplateGroupRepository>();
-
-        Template template = await Getter.GetEntityById(templateRepository.Get, entityId);
+        Template template = await Getter.GetElementById(_templateRepository, entityId);
         if (template.Order != order)
         {
-            await templateRepository.LoadParent(template);
-            TemplateGroup group = template.Parent;
-            await templateGroupRepository.LoadChildren(group);
-            OrderingUtils.SetOrder(group.Children, template, order);
-            await templateRepository.UpdateList(group.Children);
+            TemplateGroup group = await _templateRepository.GetByGroupId(template.Group.Id);
+            OrderingUtils.SetOrder(group.Elements, template, order);
+            await _templateRepository.Update(group.Elements);
         }
 
         await unitOfWork.SaveChanges();
     }
 
-    public async Task MoveToAnotherParent(Guid entityId, Guid parentId)
+    public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        ITemplateRepository templateRepository =  await unitOfWork.GetRepository<ITemplateRepository>();
-        ITemplateGroupRepository templateGroupRepository = await unitOfWork.GetRepository<ITemplateGroupRepository>();
-
-        Template entity = await Getter.GetEntityById(templateRepository.Get, entityId);
-        await templateRepository.LoadParent(entity);
-        TemplateGroup fromParent = entity.Parent;
-        TemplateGroup toParent = await Getter.GetEntityById(templateGroupRepository.Get, parentId);
-
-        if (fromParent.Id != toParent.Id)
+        Template template = await Getter.GetEntityById(_templateRepository, entityId);
+        if (template.IsFavorite != isFavorite)
         {
-            await Guard.CheckEntityWithSameName(templateRepository, toParent.Id, entity.Id, entity.Name);
-            await templateGroupRepository.LoadChildren(fromParent);
-
-            toParent.Children.Add(entity);
-            entity.Parent = toParent;
-            entity.Order = await templateRepository.GetMaxOrder(fromParent.Id) + 1;
-
-            fromParent.Children.Remove(entity);
-            await templateRepository.Update(entity);
-            OrderingUtils.Reorder(fromParent.Children);
-            await templateRepository.UpdateList(fromParent.Children);
+            template.IsFavorite = isFavorite;
+            await _templateRepository.Update(template);
         }
 
         await unitOfWork.SaveChanges();
     }
 
-    private async Task<List<TemplateEntry>> CreateEntries(TemplateParam param, IAccountRepository accountRepository)
+    public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
+    {
+        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+        Template entity = await Getter.GetElementById(_templateRepository, entityId);
+        TemplateGroup fromGroup = await _templateRepository.GetByGroupId(entity.Group.Id);
+        TemplateGroup toGroup = await _templateRepository.GetByGroupId(groupId);
+
+        if (fromGroup.Id != toGroup.Id)
+        {
+            await Guard.CheckElementWithSameName(_templateRepository, toGroup.Id, entity.Id, entity.Name);
+            int newOrder = await _templateRepository.GetMaxOrder(toGroup.Id) + 1;
+
+            entity.Group = toGroup;
+            toGroup.Elements.Add(entity);
+            fromGroup.Elements.Remove(entity);
+
+            await _templateRepository.Update(toGroup.Elements);
+            await _templateRepository.Update(fromGroup.Elements);
+            await _templateGroupRepository.Update(toGroup);
+            await _templateGroupRepository.Update(fromGroup);
+        }
+
+        await unitOfWork.SaveChanges();
+    }
+
+    public Task CombineElements(Guid primaryId, Guid secondaryId)
+    {
+        throw new NotSupportedException($"{nameof(CombineElements)} doesn't support for Templates");
+    }
+
+    private async Task<List<TemplateEntry>> CreateEntries(TemplateParam param)
     {
         List<TemplateEntry> entries = new List<TemplateEntry>();
         foreach (var entry in param.Entries)
@@ -182,7 +167,7 @@ public class TemplateService : ITemplateService
             TemplateEntry templateEntry = new TemplateEntry
             {
                 Id = Guid.NewGuid(),
-                Account = await Getter.GetEntityById(accountRepository.Get, entry.AccountId),
+                Account = await Getter.GetEntityById(_accountRepository, entry.AccountId),
                 Amount = entry.Amount
             };
             entries.Add(templateEntry);
@@ -190,4 +175,13 @@ public class TemplateService : ITemplateService
 
         return entries;
     }
+
+    private static void CheckEntries(TemplateParam param)
+    {
+        if (param.Entries == null || param.Entries.Count < 2)
+        {
+            throw new ArgumentException("Invalid amount of Transaction Entries: amount must be more than 1");
+        }
+    }
+
 }
