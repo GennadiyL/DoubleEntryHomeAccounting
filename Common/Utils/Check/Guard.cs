@@ -22,7 +22,7 @@ public static class Guard
         }
     }
 
-    public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid parentId, Guid id, string name)
+    public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
         where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : IReferenceDataElementEntity<TGroup>
     {
@@ -34,7 +34,7 @@ public static class Guard
         where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : IReferenceDataElementEntity<TGroup>
     {
-        ICollection<TElement> entities = await repository.GetByName(groupId, name);
+        ICollection<TElement> entities = await repository.GetByGroupIdAndName(groupId, name);
         CheckEntityWithSameName(entities, id, name);
     }
 
@@ -49,21 +49,21 @@ public static class Guard
         }
     }
 
-    public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid parentId)
+    public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId)
         where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : IReferenceDataElementEntity<TGroup>
     {
-        if (await repository.GetCount(parentId) > 0)
+        if (await repository.GetCount(groupId) > 0)
         {
             throw new ArgumentException("Group cannot be deleted. It contains elements");
         }
     }
 
-    public static async Task CheckExistedSubgroupsInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid parentId)
+    public static async Task CheckExistedSubgroupsInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid groupId)
         where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : IReferenceDataElementEntity<TGroup>
     {
-        if (await repository.GetCount(parentId) > 0)
+        if (await repository.GetCount(groupId) > 0)
         {
             throw new ArgumentException("Group  cannot be deleted. It contains subgroups");
         }

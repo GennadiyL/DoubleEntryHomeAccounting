@@ -1,17 +1,20 @@
 ﻿using Business.Services.Base;
-using Common.Infrastructure.Peaa;
-using Common.Models;
-using Common.Params;
-using Common.Services;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models;
+using GLSoft.DoubleEntryHomeAccounting.Common.Params;
+using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace Business.Services;
 
 public class AccountGroupService 
-    : ReferenceParentEntityService<AccountGroup, AccountSubGroup, AccountGroupParam>, IAccountGroupService
+    : ReferenceDataGroupService<AccountGroup, Account, GroupParam>, IAccountGroupService
 {
-    public AccountGroupService(IUnitOfWorkFactory unitOfWorkFactory) 
-        : base(unitOfWorkFactory)
+    public AccountGroupService(
+        IUnitOfWorkFactory unitOfWorkFactory,
+        IAccountGroupRepository groupRepository,
+        IAccountRepository elementRepository)
+        : base(unitOfWorkFactory, groupRepository, elementRepository)
     {
-
     }
 }

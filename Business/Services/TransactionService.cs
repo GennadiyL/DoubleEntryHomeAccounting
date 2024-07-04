@@ -1,10 +1,10 @@
-﻿using Common.DataAccess;
-using Common.Infrastructure.Peaa;
-using Common.Models;
-using Common.Models.Enums;
-using Common.Params;
-using Common.Services;
-using Common.Utils.Check;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models.Enums;
+using GLSoft.DoubleEntryHomeAccounting.Common.Params;
+using GLSoft.DoubleEntryHomeAccounting.Common.Services;
+using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 
 namespace Business.Services;
 

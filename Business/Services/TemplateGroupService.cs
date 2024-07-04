@@ -1,15 +1,19 @@
 ﻿using Business.Services.Base;
-using Common.Infrastructure.Peaa;
-using Common.Models;
-using Common.Params;
-using Common.Services;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models;
+using GLSoft.DoubleEntryHomeAccounting.Common.Params;
+using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace Business.Services;
 
-public class TemplateGroupService : ReferenceParentEntityService<TemplateGroup, Template, GroupEntityParam>, ITemplateGroupService
+public class TemplateGroupService : ReferenceDataGroupService<TemplateGroup, Template, GroupParam>, ITemplateGroupService
 {
-    public TemplateGroupService(IUnitOfWorkFactory unitOfWorkFactory) 
-        : base(unitOfWorkFactory)
+    public TemplateGroupService(
+        IUnitOfWorkFactory unitOfWorkFactory,
+        ITemplateGroupRepository groupRepository,
+        ITemplateRepository elementRepository)
+        : base(unitOfWorkFactory, groupRepository, elementRepository)
     {
     }
 }
