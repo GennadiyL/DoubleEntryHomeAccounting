@@ -4,7 +4,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 
 public static class OrderingUtils
 {
-    public static void Reorder<T>(ICollection<T> entities) where T : IOrderedEntity
+    public static void Reorder<T>(ICollection<T> entities) where T : class, IOrderedEntity
     {
         List<T> orderedItems = entities.OrderBy(i => i.Order).ToList();
 
@@ -14,7 +14,7 @@ public static class OrderingUtils
         }
     }
 
-    public static void SetOrder<T>(ICollection<T> entities, T orderedEntity, int order) where T : IOrderedEntity
+    public static void SetOrder<T>(ICollection<T> entities, T orderedEntity, int order) where T : class, IOrderedEntity
     {
         if (orderedEntity.Order > order || orderedEntity.Order == 0)
         {

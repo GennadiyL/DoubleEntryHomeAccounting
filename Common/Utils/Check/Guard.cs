@@ -23,16 +23,16 @@ public static class Guard
     }
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
-        where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : IReferenceDataElementEntity<TGroup>
+        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
         ICollection<TGroup> entities = await repository.GetByParentIdAndName(parentId, name);
         CheckEntityWithSameName(entities, id, name);
     }
 
     public static async Task CheckElementWithSameName<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
-        where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : IReferenceDataElementEntity<TGroup>
+        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
         ICollection<TElement> entities = await repository.GetByGroupIdAndName(groupId, name);
         CheckEntityWithSameName(entities, id, name);
@@ -50,8 +50,8 @@ public static class Guard
     }
 
     public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : IReferenceDataElementEntity<TGroup>
+        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
         if (await repository.GetCount(groupId) > 0)
         {
@@ -60,8 +60,8 @@ public static class Guard
     }
 
     public static async Task CheckExistedSubgroupsInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : IReferenceDataElementEntity<TGroup>
+        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
         if (await repository.GetCount(groupId) > 0)
         {

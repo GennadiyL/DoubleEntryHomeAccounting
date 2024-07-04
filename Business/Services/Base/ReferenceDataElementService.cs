@@ -11,9 +11,9 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 namespace Business.Services.Base;
 
 public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IReferenceDataElementService<TGroup, TElement, TParam>
-    where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-    where TElement : IReferenceDataElementEntity<TGroup>, new()
-    where TParam : INamedParam, IFavoriteParam, IElementParam
+    where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+    where TElement : class, IReferenceDataElementEntity<TGroup>, new()
+    where TParam : class, INamedParam, IFavoriteParam, IElementParam
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
     private readonly IGroupEntityRepository<TGroup, TElement> _groupRepository;

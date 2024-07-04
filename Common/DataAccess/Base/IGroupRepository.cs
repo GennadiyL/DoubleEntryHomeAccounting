@@ -3,8 +3,8 @@
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 
 public interface IGroupRepository<TGroup, TElement>
-    where TGroup : IReferenceDataGroupEntity<TGroup, TElement>
-    where TElement : IReferenceDataElementEntity<TGroup>
+    where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
+    where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
 {
     Task<ICollection<TGroup>> GetByName(string name);
     Task<TGroup> GetByParentId(Guid? parentId);

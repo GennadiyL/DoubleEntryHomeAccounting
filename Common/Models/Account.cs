@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
-public class Account : ReferenceDataElementEntity<AccountGroup>
+public class Account : ReferenceDataElementEntity<AccountGroup, Account>
 {
     public Currency Currency { get; set; }
     public Category Category { get; set; }

@@ -12,11 +12,16 @@ namespace Business.Services;
 public class CurrencyService : ICurrencyService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-
+    private readonly ICurrencyRepository _currencyRepository;
+    private readonly IAccountRepository _accountRepository;
     public CurrencyService(
-        IUnitOfWorkFactory unitOfWorkFactory)
+        IUnitOfWorkFactory unitOfWorkFactory, 
+        ICurrencyRepository currencyRepository,
+        IAccountRepository accountRepository)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
+        _currencyRepository = currencyRepository;
+        _accountRepository = accountRepository;
     }
 
     public async Task<Guid> Add(CurrencyParam param, decimal initialRate)
@@ -25,22 +30,22 @@ public class CurrencyService : ICurrencyService
 
         Guard.CheckParamForNull(param);
         CheckIsoCodeString(param.Code);
+        ChechInitialRate(initialRate);
+
         CurrencyData currencyData = CurrencyDataUtils.GetCurrencyData(param.Code);
         string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
         string name = string.IsNullOrEmpty(param.Name) ? currencyData.Name : param.Name;
-
-        ICurrencyRepository currencyRepository = await unitOfWork.GetRepository<ICurrencyRepository>();
 
         Currency addedCurrency = new Currency
         {
             IsoCode = currencyData.Code,
             Symbol = symbol,
             Name = name,
-            Order = await currencyRepository.GetMaxOrder() + 1,
+            Order = await _currencyRepository.GetMaxOrder() + 1,
         };
 
         addedCurrency.Rates.Add(new CurrencyRate { Rate = initialRate });
-        await currencyRepository.Add(addedCurrency);
+        await _currencyRepository.Add(addedCurrency);
 
         await unitOfWork.SaveChanges();
 
@@ -53,13 +58,12 @@ public class CurrencyService : ICurrencyService
 
         Guard.CheckParamForNull(param);
         CheckIsoCodeString(param.Code);
+
         CurrencyData currencyData = CurrencyDataUtils.GetCurrencyData(param.Code);
         string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
         string name = string.IsNullOrEmpty(param.Name) ? currencyData.Name : param.Name;
 
-        ICurrencyRepository currencyRepository = await unitOfWork.GetRepository<ICurrencyRepository>();
-
-        Currency updatedCurrency = await currencyRepository.GetByIsoCode(currencyData.Code);
+        Currency updatedCurrency = await _currencyRepository.GetByIsoCode(currencyData.Code);
         updatedCurrency.Symbol = symbol;
         updatedCurrency.Name = name;
 
@@ -72,21 +76,21 @@ public class CurrencyService : ICurrencyService
 
         CheckIsoCodeString(isoCode);
 
-        ICurrencyRepository currencyRepository = await unitOfWork.GetRepository<ICurrencyRepository>();
-        IAccountRepository accountRepository = await unitOfWork.GetRepository<IAccountRepository>();
-
-        Currency deletedCurrency = await currencyRepository.GetByIsoCode(isoCode);
+        Currency deletedCurrency = await _currencyRepository.GetByIsoCode(isoCode);
         if (deletedCurrency == null)
         {
-            throw new ArgumentNullException($"Currency with entity isocode is not existed");
-        }
-        if ((await accountRepository.GetAccountsByCurrency(deletedCurrency)).Any())
-        {
-            throw new ArgumentException("This Currency can not be deleted because it's used in Account");
+            throw new ArgumentNullException($"$Currency with iso code '{isoCode}' does not exist in DB");
         }
 
-        await currencyRepository.Delete(deletedCurrency);
-        OrderingUtils.Reorder(await currencyRepository.GetList());
+        if ((await _accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())
+        {
+            throw new ArgumentException("This Currency can not be deleted because it is used in one or more Accounts");
+        }
+
+        await _currencyRepository.Delete(deletedCurrency.Id);
+        ICollection<Currency> currencies = await _currencyRepository.GetAll();
+        OrderingUtils.Reorder(currencies);
+        await _currencyRepository.Update(currencies);
 
         await unitOfWork.SaveChanges();
     }
@@ -95,14 +99,12 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        ICurrencyRepository currencyRepository = await unitOfWork.GetRepository<ICurrencyRepository>();
-
-        Currency currency = await Getter.GetEntityById(currencyRepository.Get, entityId);
+        Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
         if (currency.Order != order)
         {
-            currency.Order = order;
-            OrderingUtils.SetOrder( await currencyRepository.GetList(), currency, order);
-            await currencyRepository.UpdateList(await currencyRepository.GetList());
+            ICollection<Currency> currencies = await _currencyRepository.GetAll();
+            OrderingUtils.SetOrder(currencies, currency, order);
+            await _currencyRepository.Update(currencies);
         }
 
         await unitOfWork.SaveChanges();
@@ -112,13 +114,11 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        ICurrencyRepository currencyRepository = await unitOfWork.GetRepository<ICurrencyRepository>();
-
-        Currency currency = await Getter.GetEntityById(currencyRepository.Get, entityId);
+        Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
         if (currency.IsFavorite != isFavorite)
         {
             currency.IsFavorite = isFavorite;
-            await currencyRepository.Update(currency);
+            await _currencyRepository.Update(currency);
         }
 
         await unitOfWork.SaveChanges();
@@ -131,4 +131,13 @@ public class CurrencyService : ICurrencyService
             throw new ArgumentNullException($"IsoCode as entity cannot be a null or empty");
         }
     }
+
+    private static void ChechInitialRate(decimal initialRate)
+    {
+        if (initialRate <= 0)
+        {
+            throw new ArgumentException($"Initial rate cannot be less than zero");
+        }
+    }
+
 }

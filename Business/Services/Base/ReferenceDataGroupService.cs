@@ -9,17 +9,15 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 namespace Business.Services.Base;
 
 public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IReferenceDataGroupService<TGroup, TElement, TParam>
-    where TGroup : IReferenceDataGroupEntity<TGroup, TElement>, new()
-    where TElement : IReferenceDataElementEntity<TGroup>
-    where TParam : INamedParam, IFavoriteParam, IGroupParam
+    where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>, new()
+    where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+    where TParam : class, INamedParam, IFavoriteParam, IGroupParam
 
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
     private readonly IGroupEntityRepository<TGroup, TElement> _groupRepository;
     private readonly IElementEntityRepository<TGroup, TElement> _elementRepository;
-
-    protected IUnitOfWorkFactory UnitOfWorkFactory => _unitOfWorkFactory;
-
+    
     protected ReferenceDataGroupService(
         IUnitOfWorkFactory unitOfWorkFactory, 
         IGroupEntityRepository<TGroup, TElement> groupRepository, 
@@ -145,7 +143,6 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
 
         await unitOfWork.SaveChanges();
     }
-
 
     public Task MoveToAnotherParent(Guid groupId, Guid parentId)
     {
