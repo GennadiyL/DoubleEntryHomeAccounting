@@ -7,7 +7,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 
-namespace Business.Services;
+namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
 public class CurrencyService : ICurrencyService
 {

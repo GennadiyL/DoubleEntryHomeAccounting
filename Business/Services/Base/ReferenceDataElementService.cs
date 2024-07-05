@@ -8,7 +8,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 
-namespace Business.Services.Base;
+namespace GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
 
 public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IReferenceDataElementService<TGroup, TElement, TParam>
     where TGroup : class, IGroupEntity<TGroup, TElement>

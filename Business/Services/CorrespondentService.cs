@@ -1,11 +1,11 @@
-﻿using Business.Services.Base;
+﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
-namespace Business.Services;
+namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
 public class CorrespondentService 
     : ReferenceDataElementService<CorrespondentGroup, Correspondent, ElementParam>, ICorrespondentService

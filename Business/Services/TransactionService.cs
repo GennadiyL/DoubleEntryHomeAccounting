@@ -6,7 +6,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 
-namespace Business.Services;
+namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
 public class TransactionService : ITransactionService
 {
