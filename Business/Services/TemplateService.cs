@@ -11,43 +11,34 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class TemplateService : ITemplateService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-    private readonly ITemplateRepository _templateRepository;
-    private readonly ITemplateGroupRepository _templateGroupRepository;
-    private readonly IAccountRepository _accountRepository;
 
-    public TemplateService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        ITemplateRepository templateRepository,
-        ITemplateGroupRepository templateGroupRepository,
-        IAccountRepository accountRepository)
-    {
-        _unitOfWorkFactory = unitOfWorkFactory;
-        _templateRepository = templateRepository;
-        _templateGroupRepository = templateGroupRepository;
-        _accountRepository = accountRepository;
-    }
+    public TemplateService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(TemplateParam param)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+        ITemplateGroupRepository templateGroupRepository = unitOfWork.GetRepository<ITemplateGroupRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
         CheckInputTemplateParam(param);
 
         Template addedEntity = new Template();
-        List<TemplateEntry> entries = await CreateEntries(param, addedEntity);
+        List<TemplateEntry> entries = await CreateEntries(accountRepository, param, addedEntity);
 
-        TemplateGroup group = await Getter.GetEntityById(_templateGroupRepository, param.GroupId);
-        await Guard.CheckElementWithSameName(_templateRepository, group.Id, Guid.Empty, param.Name);
+        TemplateGroup group = await Getter.GetEntityById(templateGroupRepository, param.GroupId);
+        await Guard.CheckElementWithSameName(templateRepository, group.Id, Guid.Empty, param.Name);
         
         addedEntity.Name = param.Name;
         addedEntity.Description = param.Description;
         addedEntity.IsFavorite = param.IsFavorite;
-        addedEntity.Order = await _templateRepository.GetMaxOrder(group.Id) + 1;
+        addedEntity.Order = await templateRepository.GetMaxOrder(group.Id) + 1;
         addedEntity.Entries.AddRange(entries);
         addedEntity.Group = group;
         group.Elements.Add(addedEntity);
 
-        await _templateRepository.Add(addedEntity);
+        await templateRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
@@ -58,14 +49,17 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
         CheckInputTemplateParam(param);
 
-        Template updatedEntity = await _templateRepository.GetTemplateById(entityId)
-                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist"); ;
-        await Guard.CheckElementWithSameName(_templateRepository, updatedEntity.GroupId, entityId, param.Name);
+        Template updatedEntity = await templateRepository.GetTemplateById(entityId)
+                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist");
+        await Guard.CheckElementWithSameName(templateRepository, updatedEntity.GroupId, entityId, param.Name);
 
         List<TemplateEntry> oldEntries = updatedEntity.Entries;
-        List<TemplateEntry> newEntries = await CreateEntries(param, updatedEntity);
+        List<TemplateEntry> newEntries = await CreateEntries(accountRepository, param, updatedEntity);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
@@ -74,7 +68,7 @@ public class TemplateService : ITemplateService
         updatedEntity.Entries.AddRange(newEntries);
         oldEntries.ForEach(e => e.Template = null);
 
-        await _templateRepository.Update(updatedEntity);
+        await templateRepository.Update(updatedEntity);
 
         await unitOfWork.SaveChanges();
     }
@@ -83,16 +77,18 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template deletedEntity = await _templateRepository.GetTemplateById(entityId)
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+
+        Template deletedEntity = await templateRepository.GetTemplateById(entityId)
                                  ?? throw new ArgumentNullException($"Template #{entityId} does not exist");
 
-        TemplateGroup group = await _templateRepository.GetByGroupId(deletedEntity.GroupId);
+        TemplateGroup group = await templateRepository.GetByGroupId(deletedEntity.GroupId);
 
         group.Elements.Remove(deletedEntity);
         OrderingUtils.Reorder(group.Elements);
 
-        await _templateRepository.Delete(deletedEntity.Id);
-        await _templateRepository.Update(group.Elements);
+        await templateRepository.Delete(deletedEntity.Id);
+        await templateRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -101,16 +97,18 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template template = await Getter.GetEntityById(_templateRepository, entityId);
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+
+        Template template = await Getter.GetEntityById(templateRepository, entityId);
         if (template.Order == order)
         {
             return;
         }
 
-        TemplateGroup group = await _templateRepository.GetByGroupId(template.GroupId);
+        TemplateGroup group = await templateRepository.GetByGroupId(template.GroupId);
         OrderingUtils.SetOrder(group.Elements, template, order);
 
-        await _templateRepository.Update(group.Elements);
+        await templateRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -119,7 +117,9 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template template = await Getter.GetEntityById(_templateRepository, entityId);
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+
+        Template template = await Getter.GetEntityById(templateRepository, entityId);
         if (template.IsFavorite == isFavorite)
         {
             return;
@@ -127,7 +127,7 @@ public class TemplateService : ITemplateService
 
         template.IsFavorite = isFavorite;
 
-        await _templateRepository.Update(template);
+        await templateRepository.Update(template);
 
         await unitOfWork.SaveChanges();
     }
@@ -136,17 +136,19 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template entity = await Getter.GetEntityById(_templateRepository, entityId);
-        TemplateGroup fromGroup = await _templateRepository.GetByGroupId(entity.Group.Id);
-        TemplateGroup toGroup = await _templateRepository.GetByGroupId(groupId);
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+
+        Template entity = await Getter.GetEntityById(templateRepository, entityId);
+        TemplateGroup fromGroup = await templateRepository.GetByGroupId(entity.Group.Id);
+        TemplateGroup toGroup = await templateRepository.GetByGroupId(groupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
             return;
         }
 
-        await Guard.CheckElementWithSameName(_templateRepository, toGroup.Id, entity.Id, entity.Name);
-        int newOrder = await _templateRepository.GetMaxOrder(toGroup.Id) + 1;
+        await Guard.CheckElementWithSameName(templateRepository, toGroup.Id, entity.Id, entity.Name);
+        int newOrder = await templateRepository.GetMaxOrder(toGroup.Id) + 1;
 
         fromGroup.Elements.Remove(entity);
         entity.Group = toGroup;
@@ -155,8 +157,8 @@ public class TemplateService : ITemplateService
         OrderingUtils.Reorder(fromGroup.Elements);
         OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
 
-        await _templateRepository.Update(toGroup.Elements);
-        await _templateRepository.Update(fromGroup.Elements);
+        await templateRepository.Update(toGroup.Elements);
+        await templateRepository.Update(fromGroup.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -166,15 +168,15 @@ public class TemplateService : ITemplateService
         throw new NotSupportedException($"{nameof(CombineElements)} doesn't support for Templates");
     }
 
-    private async Task<List<TemplateEntry>> CreateEntries(TemplateParam param, Template template)
+    private async Task<List<TemplateEntry>> CreateEntries(IAccountRepository accountRepository, TemplateParam param, Template template)
     {
         List<TemplateEntry> entries = new List<TemplateEntry>();
-        foreach (var entry in param.Entries)
+        foreach (TemplateEntryParam entry in param.Entries)
         {
             TemplateEntry templateEntry = new TemplateEntry
             {
                 Id = Guid.NewGuid(),
-                Account = await Getter.GetEntityById(_accountRepository, entry.AccountId),
+                Account = await Getter.GetEntityById(accountRepository, entry.AccountId),
                 Amount = entry.Amount,
                 Template = template,
             };

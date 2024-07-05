@@ -7,15 +7,9 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-public class CorrespondentService 
-    : ReferenceDataElementService<CorrespondentGroup, Correspondent, ElementParam>, ICorrespondentService
+public class CorrespondentService : ReferenceDataElementService<CorrespondentGroup, Correspondent, ElementParam>, ICorrespondentService
 {
-    public CorrespondentService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        ICorrespondentGroupRepository groupRepository,
-        ICorrespondentRepository elementRepository,
-        IAccountRepository accountRepository)
-        : base(unitOfWorkFactory, groupRepository, elementRepository, accountRepository)
+    public CorrespondentService(IUnitOfWorkFactory unitOfWork) : base(unitOfWork)
     {
     }
 

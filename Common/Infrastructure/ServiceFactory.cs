@@ -5,7 +5,7 @@ public static class ServiceFactoryExtensions
 {
     public static T GetInstance<T>(this ServiceFactory serviceFactory)
     {
-        var type = typeof(T);
+        Type type = typeof(T);
         return (T)serviceFactory(type);
     }
 }

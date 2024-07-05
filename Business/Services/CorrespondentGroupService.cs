@@ -10,11 +10,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class CorrespondentGroupService 
     : ReferenceDataGroupService<CorrespondentGroup, Correspondent, GroupParam>, ICorrespondentGroupService
 {
-    public CorrespondentGroupService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        ICorrespondentGroupRepository groupRepository,
-        ICorrespondentRepository elementRepository)
-        : base(unitOfWorkFactory,groupRepository, elementRepository )
+    public CorrespondentGroupService(IUnitOfWorkFactory unitOfWorkFactory) : base(unitOfWorkFactory)
     {
     }
 }

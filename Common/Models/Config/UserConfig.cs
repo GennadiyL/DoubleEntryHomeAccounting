@@ -1,5 +1,8 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Config;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
-public class UserConfig
+namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Config;
+
+public class UserConfig : IEntity
 {
+    public Guid Id { get; set; }
 }

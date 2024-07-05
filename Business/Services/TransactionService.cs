@@ -11,42 +11,31 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class TransactionService : ITransactionService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-    private readonly ISystemConfigRepository _systemConfigRepository;
-    private readonly ITransactionRepository _transactionRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly ICurrencyRepository _currencyRepository;
 
-    public TransactionService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        ISystemConfigRepository systemConfigRepository,
-        ITransactionRepository transactionRepository,
-        IAccountRepository accountRepository, 
-        ICurrencyRepository currencyRepository)
-    {
-        _unitOfWorkFactory = unitOfWorkFactory;
-        _systemConfigRepository = systemConfigRepository;
-        _transactionRepository = transactionRepository;
-        _accountRepository = accountRepository;
-        _currencyRepository = currencyRepository;
-    }
+    public TransactionService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(TransactionParam param)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        await CheckInputTransactionParam(param);
+        ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+
+        await CheckInputTransactionParam(systemConfigRepository, param);
 
         Transaction addedEntity = new Transaction();
 
-        List<TransactionEntry> entries = await CreateEntries(param, addedEntity);
-        decimal sumAmount = entries.Sum(e => e.Amount * e.Rate);    
+        List<TransactionEntry> entries = await CreateEntries(systemConfigRepository, currencyRepository, accountRepository, param, addedEntity);
+        decimal sumAmount = entries.Sum(e => e.Amount * e.Rate);
 
         addedEntity.Comment = param.Comment;
         addedEntity.DateTime = param.DateTime;
         addedEntity.State = sumAmount == 0 ? param.State : TransactionState.NoValid;
         addedEntity.Entries.AddRange(entries);
 
-        await _transactionRepository.Add(addedEntity);
+        await transactionRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
@@ -57,13 +46,18 @@ public class TransactionService : ITransactionService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        await CheckInputTransactionParam(param);
+        ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
-        Transaction updatedEntity = await _transactionRepository.GetTransactionById(entityId)
+        await CheckInputTransactionParam(systemConfigRepository, param);
+
+        Transaction updatedEntity = await transactionRepository.GetTransactionById(entityId)
                                     ?? throw new ArgumentNullException($"Transaction #{entityId} does not exist");
 
         List<TransactionEntry> oldEntries = updatedEntity.Entries;
-        List<TransactionEntry> newEntries = await CreateEntries(param, updatedEntity);
+        List<TransactionEntry> newEntries = await CreateEntries(systemConfigRepository, currencyRepository, accountRepository, param, updatedEntity);
         decimal totalAmount = newEntries.Sum(e => e.Amount * e.Rate);
 
         updatedEntity.Comment = param.Comment;
@@ -73,7 +67,7 @@ public class TransactionService : ITransactionService
         updatedEntity.Entries.AddRange(newEntries);
         oldEntries.ForEach(e => e.Transaction = null);
 
-        await _transactionRepository.Update(updatedEntity);
+        await transactionRepository.Update(updatedEntity);
 
         await unitOfWork.SaveChanges();
     }
@@ -82,36 +76,40 @@ public class TransactionService : ITransactionService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Transaction deletedTransaction = await _transactionRepository.GetTransactionById(entityId)
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+
+        Transaction deletedTransaction = await transactionRepository.GetTransactionById(entityId)
                                          ?? throw new ArgumentNullException($"Transaction #{entityId} does not exist");
-        await _transactionRepository.Delete(deletedTransaction.Id);
+        await transactionRepository.Delete(deletedTransaction.Id);
     }
 
     public async Task DeleteTransactionList(List<Guid> transactionIds)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+
         Guard.CheckParamForNull(transactionIds);
 
         List<Transaction> deletedTransactions = new List<Transaction>();
         foreach (Guid transactionId in transactionIds)
         {
-            Transaction deletedTransaction = await _transactionRepository.GetTransactionById(transactionId) 
+            Transaction deletedTransaction = await transactionRepository.GetTransactionById(transactionId)
                                              ?? throw new ArgumentNullException($"Transaction #{transactionId} does not exist");
             deletedTransactions.Add(deletedTransaction);
         }
 
-        await _transactionRepository.Delete(deletedTransactions.Select(e => e.Id).ToList());
+        await transactionRepository.Delete(deletedTransactions.Select(e => e.Id).ToList());
 
         await unitOfWork.SaveChanges();
     }
 
-    private async Task CheckInputTransactionParam(TransactionParam param)
+    private async Task CheckInputTransactionParam(ISystemConfigRepository systemConfigRepository, TransactionParam param)
     {
         Guard.CheckParamForNull(param);
 
-        if (DateOnly.FromDateTime(param.DateTime) < await _systemConfigRepository.GetMinDate() ||
-            DateOnly.FromDateTime(param.DateTime) > await _systemConfigRepository.GetMaxDate())
+        if (DateOnly.FromDateTime(param.DateTime) < await systemConfigRepository.GetMinDate() ||
+            DateOnly.FromDateTime(param.DateTime) > await systemConfigRepository.GetMaxDate())
         {
             throw new ArgumentException("Data and Time out of ragne.");
         }
@@ -128,11 +126,14 @@ public class TransactionService : ITransactionService
     }
 
     private async Task<List<TransactionEntry>> CreateEntries(
-        TransactionParam param, 
+        ISystemConfigRepository systemConfigRepository,
+        ICurrencyRepository currencyRepository,
+        IAccountRepository accountRepository,
+        TransactionParam param,
         Transaction transaction)
     {
-        string mainCurrencyIsoCode = await _systemConfigRepository.GetMainCurrencyIsoCode();
-        Currency mainCurrency = await _currencyRepository.GetByIsoCode(mainCurrencyIsoCode);
+        string mainCurrencyIsoCode = await systemConfigRepository.GetMainCurrencyIsoCode();
+        Currency mainCurrency = await currencyRepository.GetByIsoCode(mainCurrencyIsoCode);
 
         List<TransactionEntry> entries = new List<TransactionEntry>();
         foreach (TransactionEntryParam entryParam in param.Entries)
@@ -142,7 +143,7 @@ public class TransactionService : ITransactionService
                 throw new ArgumentException("Currency rate must be more than 0");
             }
 
-            Account account = await Getter.GetEntityById(_accountRepository, entryParam.AccountId);
+            Account account = await Getter.GetEntityById(accountRepository, entryParam.AccountId);
 
             if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {

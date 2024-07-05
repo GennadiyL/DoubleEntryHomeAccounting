@@ -15,42 +15,34 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
 
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-    private readonly IGroupEntityRepository<TGroup, TElement> _groupRepository;
-    private readonly IElementEntityRepository<TGroup, TElement> _elementRepository;
 
-    protected ReferenceDataGroupService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        IGroupEntityRepository<TGroup, TElement> groupRepository,
-        IElementEntityRepository<TGroup, TElement> elementRepository)
-    {
-        _unitOfWorkFactory = unitOfWorkFactory;
-        _groupRepository = groupRepository;
-        _elementRepository = elementRepository;
-    }
+    protected ReferenceDataGroupService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(TParam param)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TGroup parent = param.ParentId.HasValue ? await Getter.GetEntityById(_groupRepository, param.ParentId.Value) : default;
-        await Guard.CheckGroupWithSameName(_groupRepository, parent?.Id, Guid.Empty, param.Name);
+        TGroup parent = param.ParentId.HasValue ? await Getter.GetEntityById(groupRepository, param.ParentId.Value) : default;
+        await Guard.CheckGroupWithSameName(groupRepository, parent?.Id, Guid.Empty, param.Name);
 
         TGroup addedEntity = new TGroup
         {
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order = await _groupRepository.GetMaxOrder(parent?.Id) + 1
+            Order = await groupRepository.GetMaxOrder(parent?.Id) + 1
         };
 
         addedEntity.Parent = parent;
         addedEntity.ParentId = parent?.Id;
         parent?.Children.Add(addedEntity);
 
-        await _groupRepository.Add(addedEntity);
+        await groupRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
@@ -61,17 +53,19 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TGroup updatedEntity = await Getter.GetEntityById(_groupRepository, entityId);
-        await Guard.CheckGroupWithSameName(_groupRepository, updatedEntity.ParentId, updatedEntity.Id, updatedEntity.Name);
+        TGroup updatedEntity = await Getter.GetEntityById(groupRepository, entityId);
+        await Guard.CheckGroupWithSameName(groupRepository, updatedEntity.ParentId, updatedEntity.Id, updatedEntity.Name);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
         updatedEntity.IsFavorite = param.IsFavorite;
 
-        await _groupRepository.Update(updatedEntity);
+        await groupRepository.Update(updatedEntity);
 
         await unitOfWork.SaveChanges();
     }
@@ -80,12 +74,15 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup deletedEntity = await Getter.GetEntityById(_groupRepository, entityId);
+        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+        IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
 
-        await Guard.CheckExistedChildrenInTheGroup(_groupRepository, deletedEntity.Id);
-        await Guard.CheckExistedElementsInTheGroup(_elementRepository, deletedEntity.Id);
+        TGroup deletedEntity = await Getter.GetEntityById(groupRepository, entityId);
 
-        TGroup parent = await _groupRepository.GetByParentId(deletedEntity.ParentId);
+        await Guard.CheckExistedChildrenInTheGroup(groupRepository, deletedEntity.Id);
+        await Guard.CheckExistedElementsInTheGroup(elementRepository, deletedEntity.Id);
+
+        TGroup parent = await groupRepository.GetByParentId(deletedEntity.ParentId);
 
         ICollection<TGroup> entities;
         if (parent != null)
@@ -95,12 +92,12 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         }
         else
         {
-            entities = await _groupRepository.Where(e => e.Parent == null);
+            entities = await groupRepository.Where(e => e.Parent == null);
         }
         OrderingUtils.Reorder(entities);
 
-        await _groupRepository.Delete(deletedEntity.Id);
-        await _groupRepository.Update(entities);
+        await groupRepository.Delete(deletedEntity.Id);
+        await groupRepository.Update(entities);
 
         await unitOfWork.SaveChanges();
     }
@@ -109,7 +106,9 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup entity = await Getter.GetEntityById(_groupRepository, entityId);
+        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+
+        TGroup entity = await Getter.GetEntityById(groupRepository, entityId);
         if (entity.Order == order)
         {
             return;
@@ -118,17 +117,17 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         ICollection<TGroup> entities;
         if (entity.ParentId.HasValue)
         {
-            TGroup parent = await _groupRepository.GetByParentId(entity.ParentId);
+            TGroup parent = await groupRepository.GetByParentId(entity.ParentId);
             entities = parent.Children;
         }
         else
         {
-            entities = await _groupRepository.Where(e => e.Parent == null);
+            entities = await groupRepository.Where(e => e.Parent == null);
         }
 
         OrderingUtils.SetOrder(entities, entity, order);
 
-        await _groupRepository.Update(entities);
+        await groupRepository.Update(entities);
 
         await unitOfWork.SaveChanges();
     }
@@ -137,7 +136,9 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup entity = await Getter.GetEntityById(_groupRepository, entityId);
+        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+
+        TGroup entity = await Getter.GetEntityById(groupRepository, entityId);
         if (entity.IsFavorite == isFavorite)
         {
             return;
@@ -145,7 +146,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
 
         entity.IsFavorite = isFavorite;
 
-        await _groupRepository.Update(entity);
+        await groupRepository.Update(entity);
 
         await unitOfWork.SaveChanges();
     }

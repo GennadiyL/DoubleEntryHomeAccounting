@@ -1,7 +1,10 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
+
+namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa
 {
     public interface IRepositoryFactory
     {
-        Task<T> GetRepository<T>();
+        T GetRepository<T>() where T : IEntityRepository;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -10,11 +9,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class AccountGroupService 
     : ReferenceDataGroupService<AccountGroup, Account, GroupParam>, IAccountGroupService
 {
-    public AccountGroupService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        IAccountGroupRepository groupRepository,
-        IAccountRepository elementRepository)
-        : base(unitOfWorkFactory, groupRepository, elementRepository)
+    public AccountGroupService(IUnitOfWorkFactory unitOfWorkFactory) : base(unitOfWorkFactory)
     {
     }
 }

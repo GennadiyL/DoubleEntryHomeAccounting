@@ -12,21 +12,13 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class CurrencyService : ICurrencyService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-    private readonly ICurrencyRepository _currencyRepository;
-    private readonly IAccountRepository _accountRepository;
-    public CurrencyService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        ICurrencyRepository currencyRepository,
-        IAccountRepository accountRepository)
-    {
-        _unitOfWorkFactory = unitOfWorkFactory;
-        _currencyRepository = currencyRepository;
-        _accountRepository = accountRepository;
-    }
+    public CurrencyService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(CurrencyParam param, decimal initialRate)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
         Guard.CheckParamForNull(param);
         CheckIsoCodeString(param.Code);
@@ -41,11 +33,11 @@ public class CurrencyService : ICurrencyService
             IsoCode = currencyData.Code,
             Symbol = symbol,
             Name = name,
-            Order = await _currencyRepository.GetMaxOrder() + 1,
+            Order = await currencyRepository.GetMaxOrder() + 1,
         };
 
         addedCurrency.Rates.Add(new CurrencyRate { Rate = initialRate });
-        await _currencyRepository.Add(addedCurrency);
+        await currencyRepository.Add(addedCurrency);
 
         await unitOfWork.SaveChanges();
 
@@ -56,6 +48,8 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+
         Guard.CheckParamForNull(param);
         CheckIsoCodeString(param.Code);
 
@@ -63,7 +57,7 @@ public class CurrencyService : ICurrencyService
         string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
         string name = string.IsNullOrEmpty(param.Name) ? currencyData.Name : param.Name;
 
-        Currency updatedCurrency = await _currencyRepository.GetByIsoCode(currencyData.Code);
+        Currency updatedCurrency = await currencyRepository.GetByIsoCode(currencyData.Code);
         updatedCurrency.Symbol = symbol;
         updatedCurrency.Name = name;
 
@@ -74,23 +68,26 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
         CheckIsoCodeString(isoCode);
 
-        Currency deletedCurrency = await _currencyRepository.GetByIsoCode(isoCode);
+        Currency deletedCurrency = await currencyRepository.GetByIsoCode(isoCode);
         if (deletedCurrency == null)
         {
             throw new ArgumentNullException($"$Currency with iso code '{isoCode}' does not exist in DB");
         }
 
-        if ((await _accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())
+        if ((await accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())
         {
             throw new ArgumentException("This Currency can not be deleted because it is used in one or more Accounts");
         }
 
-        await _currencyRepository.Delete(deletedCurrency.Id);
-        ICollection<Currency> currencies = await _currencyRepository.GetAll();
+        await currencyRepository.Delete(deletedCurrency.Id);
+        ICollection<Currency> currencies = await currencyRepository.GetAll();
         OrderingUtils.Reorder(currencies);
-        await _currencyRepository.Update(currencies);
+        await currencyRepository.Update(currencies);
 
         await unitOfWork.SaveChanges();
     }
@@ -99,16 +96,18 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+
+        Currency currency = await Getter.GetEntityById(currencyRepository, entityId);
         if (currency.Order == order)
         {
             return;
         }
 
-        ICollection<Currency> currencies = await _currencyRepository.GetAll();
+        ICollection<Currency> currencies = await currencyRepository.GetAll();
         OrderingUtils.SetOrder(currencies, currency, order);
 
-        await _currencyRepository.Update(currencies);
+        await currencyRepository.Update(currencies);
 
         await unitOfWork.SaveChanges();
     }
@@ -117,14 +116,16 @@ public class CurrencyService : ICurrencyService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+
+        Currency currency = await Getter.GetEntityById(currencyRepository, entityId);
         if (currency.IsFavorite == isFavorite)
         {
             return;
         }
 
         currency.IsFavorite = isFavorite;
-        await _currencyRepository.Update(currency);
+        await currencyRepository.Update(currency);
 
         await unitOfWork.SaveChanges();
     }

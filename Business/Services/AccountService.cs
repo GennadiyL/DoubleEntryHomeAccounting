@@ -11,63 +11,45 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class AccountService : IAccountService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
-    private readonly IAccountGroupRepository _accountGroupRepository;
-    private readonly IAccountRepository _accountRepository;
-    private readonly ICurrencyRepository _currencyRepository;
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly ICorrespondentRepository _correspondentRepository;
-    private readonly IProjectRepository _projectRepository;
-    private readonly ITemplateRepository _templateRepository;
-    private readonly ITransactionRepository _transactionRepository;
 
-    public AccountService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        IAccountGroupRepository accountGroupRepository,
-        IAccountRepository accountRepository,
-        ICurrencyRepository currencyRepository,
-        ICategoryRepository categoryRepository,
-        ICorrespondentRepository correspondentRepository,
-        IProjectRepository projectRepository,
-        ITemplateRepository templateRepository,
-        ITransactionRepository transactionRepository)
-    {
-        _unitOfWorkFactory = unitOfWorkFactory;
-        _accountGroupRepository = accountGroupRepository;
-        _accountRepository = accountRepository;
-        _currencyRepository = currencyRepository;
-        _categoryRepository = categoryRepository;
-        _correspondentRepository = correspondentRepository;
-        _projectRepository = projectRepository;
-        _templateRepository = templateRepository;
-        _transactionRepository = transactionRepository;
-    }
+    public AccountService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(AccountParam param)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        IAccountGroupRepository accountGroupRepository = unitOfWork.GetRepository<IAccountGroupRepository>();
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
+        ICategoryRepository categoryRepository = unitOfWork.GetRepository<ICategoryRepository>();
+        ICorrespondentRepository correspondentRepository = unitOfWork.GetRepository<ICorrespondentRepository>();
+        IProjectRepository projectRepository = unitOfWork.GetRepository<IProjectRepository>();
+
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        AccountGroup group = await Getter.GetEntityById(_accountGroupRepository, param.GroupId);
-        await Guard.CheckElementWithSameName(_accountRepository, group.Id, Guid.Empty, param.Name);
+        AccountGroup group = await Getter.GetEntityById(accountGroupRepository, param.GroupId);
+        await Guard.CheckElementWithSameName(accountRepository, group.Id, Guid.Empty, param.Name);
 
         Account addedEntity = new Account
         {
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order = await _accountRepository.GetMaxOrder(group.Id) + 1,
-            Currency = await Getter.GetEntityById(_currencyRepository, param.CurrencyId),
-            Category = param.CategoryId == default ? default : await Getter.GetEntityById(_categoryRepository, param.CategoryId.Value),
-            Project = param.ProjectId == default ? default : await Getter.GetEntityById(_projectRepository, param.ProjectId.Value),
-            Correspondent = param.CorrespondentId == default ? default : await Getter.GetEntityById(_correspondentRepository, param.CorrespondentId.Value),
+            Order = await accountRepository.GetMaxOrder(group.Id) + 1,
+            Currency = await Getter.GetEntityById(currencyRepository, param.CurrencyId),
+            Category = param.CategoryId == default ? default 
+                : await Getter.GetEntityById(categoryRepository, param.CategoryId.Value),
+            Project = param.ProjectId == default ? default 
+                : await Getter.GetEntityById(projectRepository, param.ProjectId.Value),
+            Correspondent = param.CorrespondentId == default ? default 
+                : await Getter.GetEntityById(correspondentRepository, param.CorrespondentId.Value),
         };
 
         addedEntity.Group = group;
         group.Elements.Add(addedEntity);
 
-        await _accountRepository.Add(addedEntity);
+        await accountRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
@@ -78,15 +60,23 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ICategoryRepository categoryRepository = unitOfWork.GetRepository<ICategoryRepository>();
+        ICorrespondentRepository correspondentRepository = unitOfWork.GetRepository<ICorrespondentRepository>();
+        IProjectRepository projectRepository = unitOfWork.GetRepository<IProjectRepository>();
+
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        Account updatedEntity = await Getter.GetEntityById(_accountRepository, entityId);
-        await Guard.CheckElementWithSameName(_accountRepository, updatedEntity.GroupId, entityId, param.Name);
+        Account updatedEntity = await Getter.GetEntityById(accountRepository, entityId);
+        await Guard.CheckElementWithSameName(accountRepository, updatedEntity.GroupId, entityId, param.Name);
 
-        Category category = param.CategoryId == default ? default : await Getter.GetEntityById(_categoryRepository, param.CategoryId.Value);
-        Project project = param.ProjectId == default ? default : await Getter.GetEntityById(_projectRepository, param.ProjectId.Value);
-        Correspondent correspondent = param.CorrespondentId == default ? default : await Getter.GetEntityById(_correspondentRepository, param.CorrespondentId.Value);
+        Category category = param.CategoryId == default ? default 
+            : await Getter.GetEntityById(categoryRepository, param.CategoryId.Value);
+        Project project = param.ProjectId == default ? default 
+            : await Getter.GetEntityById(projectRepository, param.ProjectId.Value);
+        Correspondent correspondent = param.CorrespondentId == default ? default 
+            : await Getter.GetEntityById(correspondentRepository, param.CorrespondentId.Value);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
@@ -96,7 +86,7 @@ public class AccountService : IAccountService
         updatedEntity.Project = project;
         updatedEntity.Correspondent = correspondent;
 
-        await _accountRepository.Update(updatedEntity);
+        await accountRepository.Update(updatedEntity);
 
         await unitOfWork.SaveChanges();
     }
@@ -105,23 +95,27 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account deletedEntity = await Getter.GetEntityById(_accountRepository, entityId);
-        if (await _transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+
+        Account deletedEntity = await Getter.GetEntityById(accountRepository, entityId);
+        if (await transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new Exception("Account cannot be delete, it contains transaction.");
         }
-        if (await _templateRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
+        if (await templateRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new Exception("Account cannot be delete, it contains template.");
         }
 
-        AccountGroup group = await _accountRepository.GetByGroupId(deletedEntity.Group.Id);
+        AccountGroup group = await accountRepository.GetByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
         OrderingUtils.Reorder(group.Elements);
 
-        await _accountRepository.Delete(deletedEntity.Id);
-        await _accountRepository.Update(group.Elements);
+        await accountRepository.Delete(deletedEntity.Id);
+        await accountRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -130,16 +124,18 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
+        Account entity = await Getter.GetEntityById(accountRepository, entityId);
         if (entity.Order == order)
         {
             return;
         }
 
-        AccountGroup group = await _accountRepository.GetByGroupId(entity.Group.Id);
+        AccountGroup group = await accountRepository.GetByGroupId(entity.Group.Id);
         OrderingUtils.SetOrder(group.Elements, entity, order);
 
-        await _accountRepository.Update(group.Elements);
+        await accountRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -148,7 +144,9 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
+        Account entity = await Getter.GetEntityById(accountRepository, entityId);
         if (entity.IsFavorite == isFavorite)
         {
             return;
@@ -156,7 +154,7 @@ public class AccountService : IAccountService
 
         entity.IsFavorite = isFavorite;
 
-        await _accountRepository.Update(entity);
+        await accountRepository.Update(entity);
 
         await unitOfWork.SaveChanges();
     }
@@ -165,17 +163,19 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
-        AccountGroup fromGroup = await _accountRepository.GetByGroupId(entity.Group.Id);
-        AccountGroup toGroup = await _accountRepository.GetByGroupId(groupId);
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+
+        Account entity = await Getter.GetEntityById(accountRepository, entityId);
+        AccountGroup fromGroup = await accountRepository.GetByGroupId(entity.Group.Id);
+        AccountGroup toGroup = await accountRepository.GetByGroupId(groupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
             return;
         }
 
-        await Guard.CheckElementWithSameName(_accountRepository, toGroup.Id, entity.Id, entity.Name);
-        int newOrder = await _accountRepository.GetMaxOrder(toGroup.Id) + 1;
+        await Guard.CheckElementWithSameName(accountRepository, toGroup.Id, entity.Id, entity.Name);
+        int newOrder = await accountRepository.GetMaxOrder(toGroup.Id) + 1;
 
         fromGroup.Elements.Remove(entity);
         entity.Group = toGroup;
@@ -184,8 +184,8 @@ public class AccountService : IAccountService
         OrderingUtils.Reorder(fromGroup.Elements);
         OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
 
-        await _accountRepository.Update(toGroup.Elements);
-        await _accountRepository.Update(fromGroup.Elements);
+        await accountRepository.Update(toGroup.Elements);
+        await accountRepository.Update(fromGroup.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -194,8 +194,12 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account primaryAccount = await Getter.GetEntityById(_accountRepository, primaryId);
-        Account secondaryAccount = await Getter.GetEntityById(_accountRepository, secondaryId);
+        IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
+        ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
+        ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
+
+        Account primaryAccount = await Getter.GetEntityById(accountRepository, primaryId);
+        Account secondaryAccount = await Getter.GetEntityById(accountRepository, secondaryId);
 
         if (primaryAccount.Id == secondaryAccount.Id)
         {
@@ -207,7 +211,7 @@ public class AccountService : IAccountService
         }
 
         ICollection<TemplateEntry> templateEntries =
-            await _templateRepository.GetEntriesByAccountId(secondaryAccount.Id);
+            await templateRepository.GetEntriesByAccountId(secondaryAccount.Id);
         IList<Template> templates = templateEntries.Select(e => e.Template).ToList();
         foreach (TemplateEntry templateEntry in templateEntries)
         {
@@ -215,21 +219,21 @@ public class AccountService : IAccountService
         }
 
         ICollection<TransactionEntry> transactionEntries =
-            await _transactionRepository.GetEntriesByAccountId(secondaryAccount.Id);
+            await transactionRepository.GetEntriesByAccountId(secondaryAccount.Id);
         IList<Transaction> transactions = transactionEntries.Select(e => e.Transaction).ToList();
         foreach (TransactionEntry transactionEntry in transactionEntries)
         {
             transactionEntry.Account = primaryAccount;
         }
 
-        AccountGroup secondaryGroup = await _accountRepository.GetByGroupId(secondaryAccount.GroupId);
+        AccountGroup secondaryGroup = await accountRepository.GetByGroupId(secondaryAccount.GroupId);
         secondaryGroup.Elements.Remove(secondaryAccount);
         OrderingUtils.Reorder(secondaryGroup.Elements);
 
-        await _templateRepository.Update(templates);
-        await _transactionRepository.Update(transactions);
-        await _accountRepository.Delete(secondaryAccount.Id);
-        await _accountRepository.Update(secondaryGroup.Elements);
+        await templateRepository.Update(templates);
+        await transactionRepository.Update(transactions);
+        await accountRepository.Delete(secondaryAccount.Id);
+        await accountRepository.Update(secondaryGroup.Elements);
 
         await unitOfWork.SaveChanges();
     }

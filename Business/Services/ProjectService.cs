@@ -7,15 +7,9 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-public class ProjectService 
-    : ReferenceDataElementService<ProjectGroup, Project, ElementParam>, IProjectService
+public class ProjectService : ReferenceDataElementService<ProjectGroup, Project, ElementParam>, IProjectService
 {
-    public ProjectService(
-        IUnitOfWorkFactory unitOfWorkFactory,
-        IProjectGroupRepository groupRepository,
-        IProjectRepository elementRepository,
-        IAccountRepository accountRepository)
-        : base(unitOfWorkFactory, groupRepository, elementRepository, accountRepository)
+    public ProjectService(IUnitOfWorkFactory unitOfWork) : base(unitOfWork)
     {
     }
 
