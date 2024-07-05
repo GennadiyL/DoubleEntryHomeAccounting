@@ -31,24 +31,19 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        CheckInputTemplateParam(param);
 
-        CheckEntries(param);
-        List<TemplateEntry> entries = await CreateEntries(param);
+        Template addedEntity = new Template();
+        List<TemplateEntry> entries = await CreateEntries(param, addedEntity);
 
         TemplateGroup group = await Getter.GetEntityById(_templateGroupRepository, param.GroupId);
         await Guard.CheckElementWithSameName(_templateRepository, group.Id, Guid.Empty, param.Name);
-
-        Template addedEntity = new Template
-        {
-            Name = param.Name,
-            Description = param.Description,
-            IsFavorite = param.IsFavorite,
-            Order = await _templateRepository.GetMaxOrder(group.Id) + 1
-        };
+        
+        addedEntity.Name = param.Name;
+        addedEntity.Description = param.Description;
+        addedEntity.IsFavorite = param.IsFavorite;
+        addedEntity.Order = await _templateRepository.GetMaxOrder(group.Id) + 1;
         addedEntity.Entries.AddRange(entries);
-
         addedEntity.Group = group;
         group.Elements.Add(addedEntity);
 
@@ -63,26 +58,21 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
-        CheckEntries(param);
+        CheckInputTemplateParam(param);
 
-        var updatedEntity = await Getter.GetEntityById(_templateRepository, entityId);
+        Template updatedEntity = await _templateRepository.GetTemplateById(entityId)
+                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist"); ;
         await Guard.CheckElementWithSameName(_templateRepository, updatedEntity.GroupId, entityId, param.Name);
 
         List<TemplateEntry> oldEntries = updatedEntity.Entries;
-        List<TemplateEntry> newEntries = await CreateEntries(param);
+        List<TemplateEntry> newEntries = await CreateEntries(param, updatedEntity);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
         updatedEntity.IsFavorite = param.IsFavorite;
         updatedEntity.Entries.Clear();
         updatedEntity.Entries.AddRange(newEntries);
-        oldEntries.ForEach(e =>
-        {
-            e.Template = null;
-            e.TemplateId = Guid.Empty;
-        });
+        oldEntries.ForEach(e => e.Template = null);
 
         await _templateRepository.Update(updatedEntity);
 
@@ -93,7 +83,8 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template deletedEntity = await Getter.GetEntityById(_templateRepository, entityId);
+        Template deletedEntity = await _templateRepository.GetTemplateById(entityId)
+                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist");
 
         TemplateGroup group = await _templateRepository.GetByGroupId(deletedEntity.GroupId);
 
@@ -175,7 +166,7 @@ public class TemplateService : ITemplateService
         throw new NotSupportedException($"{nameof(CombineElements)} doesn't support for Templates");
     }
 
-    private async Task<List<TemplateEntry>> CreateEntries(TemplateParam param)
+    private async Task<List<TemplateEntry>> CreateEntries(TemplateParam param, Template template)
     {
         List<TemplateEntry> entries = new List<TemplateEntry>();
         foreach (var entry in param.Entries)
@@ -184,7 +175,8 @@ public class TemplateService : ITemplateService
             {
                 Id = Guid.NewGuid(),
                 Account = await Getter.GetEntityById(_accountRepository, entry.AccountId),
-                Amount = entry.Amount
+                Amount = entry.Amount,
+                Template = template,
             };
             entries.Add(templateEntry);
         }
@@ -192,8 +184,12 @@ public class TemplateService : ITemplateService
         return entries;
     }
 
-    private static void CheckEntries(TemplateParam param)
+    private static void CheckInputTemplateParam(TemplateParam param)
     {
+        Guard.CheckParamForNull(param);
+
+        Guard.CheckParamNameForNull(param);
+
         if (param.Entries == null || param.Entries.Count < 2)
         {
             throw new ArgumentException("Invalid amount of Transaction Entries: amount must be more than 1");

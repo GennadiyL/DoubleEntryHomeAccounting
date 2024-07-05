@@ -1,5 +1,4 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Model;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Enums;
@@ -15,17 +14,20 @@ public class TransactionService : ITransactionService
     private readonly ISystemConfigRepository _systemConfigRepository;
     private readonly ITransactionRepository _transactionRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly ICurrencyRepository _currencyRepository;
 
     public TransactionService(
         IUnitOfWorkFactory unitOfWorkFactory,
         ISystemConfigRepository systemConfigRepository,
         ITransactionRepository transactionRepository,
-        IAccountRepository accountRepository)
+        IAccountRepository accountRepository, 
+        ICurrencyRepository currencyRepository)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
         _systemConfigRepository = systemConfigRepository;
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
+        _currencyRepository = currencyRepository;
     }
 
     public async Task<Guid> Add(TransactionParam param)
@@ -59,16 +61,16 @@ public class TransactionService : ITransactionService
 
         Transaction updatedEntity = await _transactionRepository.GetTransactionById(entityId)
                                     ?? throw new ArgumentNullException($"Transaction #{entityId} does not exist");
-        List<TransactionEntry> oldEntries = updatedEntity.Entries;
 
-        List<TransactionEntry> entries = await CreateEntries(param, updatedEntity);
-        decimal sumAmount = entries.Sum(e => e.Amount * e.Rate);
+        List<TransactionEntry> oldEntries = updatedEntity.Entries;
+        List<TransactionEntry> newEntries = await CreateEntries(param, updatedEntity);
+        decimal totalAmount = newEntries.Sum(e => e.Amount * e.Rate);
 
         updatedEntity.Comment = param.Comment;
         updatedEntity.DateTime = param.DateTime;
-        updatedEntity.State = sumAmount == 0 ? param.State : TransactionState.NoValid;
+        updatedEntity.State = totalAmount == 0 ? param.State : TransactionState.NoValid;
         updatedEntity.Entries.Clear();
-        updatedEntity.Entries.AddRange(entries);
+        updatedEntity.Entries.AddRange(newEntries);
         oldEntries.ForEach(e => e.Transaction = null);
 
         await _transactionRepository.Update(updatedEntity);
@@ -130,7 +132,8 @@ public class TransactionService : ITransactionService
         Transaction transaction)
     {
         string mainCurrencyIsoCode = await _systemConfigRepository.GetMainCurrencyIsoCode();
- 
+        Currency mainCurrency = await _currencyRepository.GetByIsoCode(mainCurrencyIsoCode);
+
         List<TransactionEntry> entries = new List<TransactionEntry>();
         foreach (TransactionEntryParam entryParam in param.Entries)
         {
@@ -139,10 +142,9 @@ public class TransactionService : ITransactionService
                 throw new ArgumentException("Currency rate must be more than 0");
             }
 
-            Account account = await _accountRepository.GetById(entryParam.AccountId, Include<Account>.Create(e => e.Currency))
-                              ?? throw new ArgumentNullException($"Account #{entryParam.AccountId} does not exist");
+            Account account = await Getter.GetEntityById(_accountRepository, entryParam.AccountId);
 
-            if (account.Currency.IsoCode == mainCurrencyIsoCode && entryParam.Rate != 1)
+            if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {
                 throw new ArgumentException("Rate for main Currency must be 1");
             }
@@ -150,9 +152,11 @@ public class TransactionService : ITransactionService
             TransactionEntry addedEntry = new TransactionEntry
             {
                 Account = account,
+                AccountId = account.Id,
                 Rate = entryParam.Rate,
                 Amount = entryParam.Amount,
-                Transaction = transaction
+                Transaction = transaction,
+                TransactionId = transaction.Id
             };
             entries.Add(addedEntry);
 

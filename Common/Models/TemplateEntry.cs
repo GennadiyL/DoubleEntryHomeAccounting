@@ -6,6 +6,7 @@ public class TemplateEntry : Entity
 {
     public Guid TemplateId { get; set; }
     public Template Template { get; set; }
+    public Guid AccountId { get; set; }
     public Account Account { get; set; }
     public decimal Amount { get; set; }
 }
