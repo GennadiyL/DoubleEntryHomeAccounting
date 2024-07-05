@@ -13,6 +13,7 @@ public class AddCategoryGroupTests
     private IUnitOfWorkFactory _unitOfWorkFactory;
     private IUnitOfWork _unitOfWork;
     private IGroupEntityRepository<CategoryGroup, Category> _groupRepository;
+    private CategoryGroupService _service;
 
     [SetUp]
     public void SetUp()
@@ -24,6 +25,8 @@ public class AddCategoryGroupTests
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
+
+        _service = new CategoryGroupService(_unitOfWorkFactory);
     }
 
     [TearDown]
@@ -44,12 +47,11 @@ public class AddCategoryGroupTests
         };
         CategoryGroup entity = null;
 
-        _groupRepository.GetById(parent.Id, null).Returns(parent);
+        _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetByParentId(parent.Id).Returns(parent);
         _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
-        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
         GroupParam param = new GroupParam
         {
             Name = name,
@@ -57,10 +59,10 @@ public class AddCategoryGroupTests
             IsFavorite = isFavorite,
             ParentId = parent.Id,
         };
-
-        await service.Add(param);
+        Guid id = await _service.Add(param);
 
         Assert.IsNotNull(entity);
+        Assert.That(entity.Id, Is.EqualTo(id));
         Assert.IsTrue(ReferenceEquals(parent, entity.Parent));
         Assert.IsTrue(parent.Children.Contains(entity));
 
@@ -81,7 +83,6 @@ public class AddCategoryGroupTests
         _groupRepository.GetMaxOrder(default).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
-        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
         GroupParam param = new GroupParam
         {
             Name = name,
@@ -89,8 +90,7 @@ public class AddCategoryGroupTests
             IsFavorite = isFavorite,
             ParentId = null,
         };
-
-        await service.Add(param);
+        await _service.Add(param);
 
         Assert.IsNotNull(entity);
         Assert.That(entity.Parent, Is.EqualTo(null));
@@ -101,15 +101,10 @@ public class AddCategoryGroupTests
         Assert.That(entity.Order, Is.EqualTo(maxOrder + 1));
     }
 
-
-    //TODO: AddCategoryGroupWithMissingParentNegativeTest
-
     [Test]
     public void AddCategoryGroupCheckEntityNullNegativeTest()
     {
-        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
-
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(null));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(null));
     }
 
     [Test]
@@ -121,46 +116,50 @@ public class AddCategoryGroupTests
             Description = "description",
             IsFavorite = true
         };
-
-        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
-
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(param));
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(param));
     }
 
-    //    [Test]
-    //    public void ExceptionAddCategoryGroupCheckEntityWithSameNameNegativeTest()
-    //    {
-    //        var entity = new CategoryGroup
-    //        {
-    //            Name = "name",
-    //            Description = "description",
-    //            IsFavorite = true
-    //        };
+    [Test]
+    public void AddCategoryGroupWithMissingParentNegativeTest()
+    {
+        _groupRepository.GetById(Arg.Any<Guid>()).Returns((CategoryGroup)null);
 
-    //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
-    //        mockEntityDataAccess.Setup(eda => eda.GetByName(It.IsAny<string>()))
-    //            .Returns<string>(s => new List<CategoryGroup> { new() { Name = s } });
+        GroupParam param = new GroupParam
+        {
+            Name = "Name",
+            Description = "Description",
+            IsFavorite = true,
+            ParentId = Guid.NewGuid(),
+        };
 
-    //        var service = new CategoryGroupService(CreateMockGlobalDataAccess(), mockEntityDataAccess.Object,
-    //            CreateMockChildEntityDataAccess());
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(param));
+    }
 
-    //        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(entity));
-    //    }
+    [Test]
+    public void AddCategoryGroupCheckEntityWithSameNameNegativeTest()
+    {
+        const string secondName = "Second Name";
+        const string firstName = "First Name";
 
+        CategoryGroup parent = new CategoryGroup
+        {
+            Id = Guid.NewGuid(),
+            Name = "Group"
+        };
+        
+        parent.Children.Add(new CategoryGroup() {Id = Guid.NewGuid() , Name = firstName});
+        parent.Children.Add(new CategoryGroup() { Id = Guid.NewGuid(), Name = secondName });
 
+        _groupRepository.GetById(parent.Id).Returns(parent);
+        _groupRepository.GetByParentId(parent.Id).Returns(parent);
 
-    //    private ICategoryDataAccess CreateMockChildEntityDataAccess()
-    //    {
-    //        var mockChildEntityDataAccess = new Mock<ICategoryDataAccess>();
-    //        return mockChildEntityDataAccess.Object;
-    //    }
-
-    //    private IGlobalDataAccess CreateMockGlobalDataAccess()
-    //    {
-    //        var mockGlobalDataAccess = new Mock<IGlobalDataAccess>();
-    //        mockGlobalDataAccess.Setup(gda => gda.Load());
-    //        mockGlobalDataAccess.Setup(gda => gda.Save());
-    //        mockGlobalDataAccess.Setup(gda => gda.Get(It.IsAny<Guid>())).Returns(() => null);
-    //        return mockGlobalDataAccess.Object;
-    //    }
+        var param = new GroupParam()
+        {
+            Name = secondName,
+            Description = "description",
+            IsFavorite = true,
+            ParentId = parent.Id
+        };
+        Assert.ThrowsAsync<ArgumentException>(async () => await _service.Add(param));
+    }
 }

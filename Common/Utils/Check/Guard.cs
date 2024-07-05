@@ -49,7 +49,7 @@ public static class Guard
                 .Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault(t => t.Id != id) != null)
         {
-            throw new ArgumentException($"In {typeof(T).Name} with the same name has already existed in the collection");
+            throw new ArgumentException($"In {typeof(T).Name} with the same name '{name}' has already existed in the collection");
         }
     }
 
