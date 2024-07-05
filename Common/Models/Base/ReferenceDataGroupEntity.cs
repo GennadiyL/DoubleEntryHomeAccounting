@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Base;
 
-public abstract class ReferenceDataGroupEntity<TGroup, TElement> : ReferenceDataEntity, IReferenceDataGroupEntity<TGroup, TElement>
+public abstract class ReferenceDataGroupEntity<TGroup, TElement> : ReferenceDataEntity, IGroupEntity<TGroup, TElement>
     where TGroup : class, IGroupEntity<TGroup, TElement>
     where TElement : class, IElementEntity<TGroup, TElement>
 {
