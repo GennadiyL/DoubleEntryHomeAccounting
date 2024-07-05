@@ -82,7 +82,7 @@ public class AccountService : IAccountService
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        Account updatedEntity = await Getter.GetEntityById(_accountRepository, entityId);
+        Account updatedEntity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
         AccountGroup group = await _accountRepository.GetByGroupId(updatedEntity.Group.Id);
 
         await Guard.CheckElementWithSameName(_accountRepository, group.Id, entityId, param.Name);
@@ -108,7 +108,7 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account deletedEntity = await Getter.GetEntityById(_accountRepository, entityId);
+        Account deletedEntity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
         if (await _transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new Exception("Account cannot be delete, it contains transaction.");
@@ -133,7 +133,7 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
         if (entity.Order != order)
         {
             AccountGroup group = await _accountRepository.GetByGroupId(entity.Group.Id);
@@ -148,7 +148,7 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
         if (entity.IsFavorite != isFavorite)
         {
             entity.IsFavorite = isFavorite;
@@ -162,7 +162,7 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
         AccountGroup fromGroup = await _accountRepository.GetByGroupId(entity.Group.Id);
         AccountGroup toGroup = await _accountRepository.GetByGroupId(groupId);
 
@@ -191,15 +191,15 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account primaryAccount = await Getter.GetEntityById(_accountRepository, primaryId);
-        Account secondaryAccount = await Getter.GetEntityById(_accountRepository, secondaryId);
+        Account primaryAccount = await Getter.GetElementWithGroupById(_accountRepository, primaryId);
+        Account secondaryAccount = await Getter.GetElementWithGroupById(_accountRepository, secondaryId);
 
         if (primaryAccount.Id != secondaryAccount.Id)
         {
             primaryAccount =
-                await _accountRepository.GetById(primaryAccount.Id, Include<Account>.Create(e => e.Currency));
+                await _accountRepository.GetById(primaryAccount.Id, Include<Account>.Create(e => e.Currency).Add(e => e.Group));
             secondaryAccount =
-                await _accountRepository.GetById(secondaryAccount.Id, Include<Account>.Create(e => e.Currency));
+                await _accountRepository.GetById(secondaryAccount.Id, Include<Account>.Create(e => e.Currency).Add(e => e.Group));
             if (primaryAccount.Currency.Id != secondaryAccount.Currency.Id)
             {
                 throw new ArgumentException("Can't combine accounts with different currencies");
@@ -222,7 +222,7 @@ public class AccountService : IAccountService
             }
             await _transactionRepository.Update(transactions);
 
-            AccountGroup secondaryGroup = await _accountRepository.GetByGroupId(secondaryAccount.Id);
+            AccountGroup secondaryGroup = await _accountRepository.GetByGroupId(secondaryAccount.Group.Id);
             secondaryGroup.Elements.Remove(secondaryAccount);
             OrderingUtils.Reorder(secondaryGroup.Elements);
             await _accountRepository.Delete(secondaryAccount.Id);

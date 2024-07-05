@@ -63,7 +63,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TGroup updatedEntity = await Getter.GetEntityById(_groupRepository, entityId);
+        TGroup updatedEntity = await Getter.GetGroupWithParentById(_groupRepository, entityId);
 
         TGroup parent = updatedEntity.Parent != null ? await _groupRepository.GetById(updatedEntity.Parent.Id) : default;
         await Guard.CheckGroupWithSameName(_groupRepository, parent?.Id, updatedEntity.Id, updatedEntity.Name);
@@ -81,7 +81,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup deletedEntity = await Getter.GetEntityById(_groupRepository, entityId);
+        TGroup deletedEntity = await Getter.GetGroupWithParentById(_groupRepository, entityId);
 
         await Guard.CheckExistedSubgroupsInTheGroup(_groupRepository, deletedEntity.Id);
         await Guard.CheckExistedElementsInTheGroup(_elementRepository, deletedEntity.Id);
@@ -110,7 +110,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup entity = await Getter.GetEntityById(_groupRepository, entityId);
+        TGroup entity = await Getter.GetGroupWithParentById(_groupRepository, entityId);
         if (entity.Order != order)
         {
             ICollection<TGroup> entities;
@@ -134,7 +134,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TGroup entity = await Getter.GetEntityById(_groupRepository, entityId);
+        TGroup entity = await Getter.GetGroupWithParentById(_groupRepository, entityId);
         if (entity.IsFavorite != isFavorite)
         {
             entity.IsFavorite = isFavorite;

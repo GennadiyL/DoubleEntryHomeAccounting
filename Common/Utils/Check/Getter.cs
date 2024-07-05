@@ -16,7 +16,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check
             return item;
         }
 
-        public static async Task<TElement> GetElementById<TGroup, TElement>(IElementEntityRepository<TGroup, TElement> repo, Guid entityId)
+        public static async Task<TElement> GetElementWithGroupById<TGroup, TElement>(IElementEntityRepository<TGroup, TElement> repo, Guid entityId)
             where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
             where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
         {
@@ -28,7 +28,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check
             return item;
         }
 
-        public static async Task<TGroup> GetGroupById<TGroup, TElement>(IGroupEntityRepository<TGroup, TElement> repo, Guid entityId)
+        public static async Task<TGroup> GetGroupWithParentById<TGroup, TElement>(IGroupEntityRepository<TGroup, TElement> repo, Guid entityId)
             where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
             where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
         {

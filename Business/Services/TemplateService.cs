@@ -69,7 +69,7 @@ public class TemplateService : ITemplateService
 
         List<TemplateEntry> entries = await CreateEntries(param);
 
-        var updatedEntity = await Getter.GetEntityById(_templateRepository, entityId);
+        var updatedEntity = await Getter.GetElementWithGroupById(_templateRepository, entityId);
         await Guard.CheckElementWithSameName(_templateRepository, updatedEntity.Group.Id, entityId, param.Name);
 
         updatedEntity.Name = param.Name;
@@ -87,7 +87,7 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template deletedEntity = await Getter.GetElementById(_templateRepository, entityId);
+        Template deletedEntity = await Getter.GetElementWithGroupById(_templateRepository, entityId);
         TemplateGroup group = await _templateRepository.GetByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
@@ -103,7 +103,7 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template template = await Getter.GetElementById(_templateRepository, entityId);
+        Template template = await Getter.GetElementWithGroupById(_templateRepository, entityId);
         if (template.Order != order)
         {
             TemplateGroup group = await _templateRepository.GetByGroupId(template.Group.Id);
@@ -118,7 +118,7 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template template = await Getter.GetEntityById(_templateRepository, entityId);
+        Template template = await Getter.GetElementWithGroupById(_templateRepository, entityId);
         if (template.IsFavorite != isFavorite)
         {
             template.IsFavorite = isFavorite;
@@ -132,7 +132,7 @@ public class TemplateService : ITemplateService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Template entity = await Getter.GetElementById(_templateRepository, entityId);
+        Template entity = await Getter.GetElementWithGroupById(_templateRepository, entityId);
         TemplateGroup fromGroup = await _templateRepository.GetByGroupId(entity.Group.Id);
         TemplateGroup toGroup = await _templateRepository.GetByGroupId(groupId);
 

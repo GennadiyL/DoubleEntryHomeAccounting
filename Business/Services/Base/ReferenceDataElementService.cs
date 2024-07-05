@@ -67,7 +67,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TElement updatedEntity = await Getter.GetEntityById(_elementRepository, entityId);
+        TElement updatedEntity = await Getter.GetElementWithGroupById(_elementRepository, entityId);
 
         TGroup group = await _elementRepository.GetByGroupId(updatedEntity.Group.Id);
         await Guard.CheckElementWithSameName(_elementRepository, group.Id, entityId, param.Name);
@@ -85,7 +85,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TElement deletedEntity = await Getter.GetEntityById(_elementRepository, entityId);
+        TElement deletedEntity = await Getter.GetElementWithGroupById(_elementRepository, entityId);
 
         TGroup group = await _elementRepository.GetByGroupId(deletedEntity.Group.Id);
 
@@ -109,7 +109,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TElement entity = await Getter.GetEntityById(_elementRepository, entityId);
+        TElement entity = await Getter.GetElementWithGroupById(_elementRepository, entityId);
         if (entity.Order != order)
         {
             TGroup group = await _elementRepository.GetByGroupId(entity.Group.Id);
@@ -124,7 +124,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TElement entity = await Getter.GetEntityById(_elementRepository, entityId);
+        TElement entity = await Getter.GetElementWithGroupById(_elementRepository, entityId);
         if (entity.IsFavorite != isFavorite)
         {
             entity.IsFavorite = isFavorite;
@@ -138,7 +138,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TElement entity = await Getter.GetEntityById(_elementRepository, entityId);
+        TElement entity = await Getter.GetElementWithGroupById(_elementRepository, entityId);
         TGroup fromGroup = await _elementRepository.GetByGroupId(entity.Group.Id);
         TGroup toGroup = await _elementRepository.GetByGroupId(groupId);
 
@@ -167,8 +167,8 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        TElement primaryEntity = await Getter.GetEntityById(_elementRepository, primaryId);
-        TElement secondaryEntity = await Getter.GetEntityById(_elementRepository, secondaryId);
+        TElement primaryEntity = await Getter.GetElementWithGroupById(_elementRepository, primaryId);
+        TElement secondaryEntity = await Getter.GetElementWithGroupById(_elementRepository, secondaryId);
 
         if (primaryEntity.Id != secondaryEntity.Id)
         {
