@@ -1,5 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -10,49 +10,57 @@ namespace Business.UnitTests.CategoryGroupTests;
 [TestFixture]
 public class AddCategoryGroupTests
 {
-    //[TestCase("Name", "Description", true, 6)]
-    //[TestCase("A", "", false, 12001)]
-    //[TestCase("StringName", "Words about CategoryGroup", true, 0)]
-    //public async Task AddCategoryGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
-    //{
-    //    CategoryGroup addedEntity = null;
+    [TestCase("Name", "Description", true, 6)]
+    [TestCase("Andy", "", false, 12001)]
+    [TestCase("StringName", "Words about CategoryGroup", true, 0)]
+    public async Task AddCategoryGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
+    {
+        CategoryGroup parent = new CategoryGroup
+        {
+            Id = Guid.NewGuid(),
+            Name = "Group"
+        };
+        CategoryGroup entity = null;
 
+        IGroupEntityRepository<CategoryGroup, Category> groupRepository = Substitute.For<IGroupEntityRepository<CategoryGroup, Category>>();
+        groupRepository.GetById(parent.Id, null).Returns(parent);
+        groupRepository.GetByParentId(parent.Id).Returns(parent);
+        groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
+        await groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
-    //    ICategoryGroupRepository categoryGroupRepository = Substitute.For<ICategoryGroupRepository>();
-    //    IUnitOfWorkFactory unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
-    //    ICategoryGroupRepository groupRepository,
-    //    ICategoryRepository elementRepository
+        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
+        unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup,Category>>().Returns(groupRepository);
 
-    //    categoryGroupRepository.Setup(eda => eda.GetByName(It.IsAny<string>())).Returns(() => new List<CategoryGroup>());
-    //    categoryGroupRepository.Setup(eda => eda.GetMaxOrder()).Returns(() => maxOrder);
-    //    categoryGroupRepository.Setup(eda => eda.Add(It.IsAny<CategoryGroup>()))
-    //        .Callback<CategoryGroup>(cg => addedEntity = cg);
+        IUnitOfWorkFactory unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
+        unitOfWorkFactory.Create().Returns(unitOfWork);
 
-    //    var service = new CategoryGroupService(CreateMockGlobalDataAccess(), categoryGroupRepository.Object,
-    //        CreateMockChildEntityDataAccess());
-    //    GroupParam category = new GroupParam
-    //    {
-    //        Name = name,
-    //        Description = description,
-    //        IsFavorite = isFavorite,
-    //        ParentId = Guid.NewGuid(),
-    //    };
+        var service = new CategoryGroupService(unitOfWorkFactory);
+        GroupParam groupParam = new GroupParam
+        {
+            Name = name,
+            Description = description,
+            IsFavorite = isFavorite,
+            ParentId = parent.Id,
+        };
 
-    //    await service.Add(category);
+        await service.Add(groupParam);
 
-    //    Assert.IsNotNull(addedEntity);
-    //    Assert.IsFalse(ReferenceEquals(addedEntity,
-    //        entity)); //checking that it was created a copy, instead the origin was posted
+        Assert.IsNotNull(entity);
+        Assert.IsTrue(ReferenceEquals(parent, entity.Parent));
+        Assert.IsTrue(parent.Children.Contains(entity));
 
-    //    Assert.AreEqual(addedEntity.Id, entity.Id);
-    //    Assert.AreEqual(addedEntity.Name, entity.Name);
-    //    Assert.AreEqual(addedEntity.Description, entity.Description);
-    //    Assert.AreEqual(addedEntity.IsFavorite, entity.IsFavorite);
-    //    Assert.AreEqual(addedEntity.Order, maxOrder + 1);
-    //}
+        Assert.That(name, Is.EqualTo(groupParam.Name));
+        Assert.That(entity.Description, Is.EqualTo(description));
+        Assert.That(entity.IsFavorite, Is.EqualTo(isFavorite));
+        Assert.That(entity.Order, Is.EqualTo(maxOrder + 1));
+    }
+
+    //TODO: AddCategoryGroupWithNullParentPositiveTest
+
+    //TODO: AddCategoryGroupWithMissingParentNegativeTest
 
     //    [Test]
-    //    public void ExceptionAddCategoryGroupCheckEntityNullTest()
+    //    public void AddCategoryGroupCheckEntityNullNegativeTest()
     //    {
     //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
 
@@ -64,7 +72,7 @@ public class AddCategoryGroupTests
     //    }
 
     //    [Test]
-    //    public void ExceptionAddCategoryGroupCheckEntityNameNullTest()
+    //    public void AddCategoryGroupCheckEntityNameNullNegativeTest()
     //    {
     //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
 
@@ -81,31 +89,7 @@ public class AddCategoryGroupTests
     //    }
 
     //    [Test]
-    //    public void ExceptionAddCategoryGroupCheckEntityWithSameIdTest()
-    //    {
-    //        var entity = new CategoryGroup
-    //        {
-    //            Id = Guid.NewGuid(),
-    //            Name = "name",
-    //            Description = "description",
-    //            IsFavorite = true
-    //        };
-
-    //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
-
-    //        var mockGlobalDataAccess = new Mock<IGlobalDataAccess>();
-    //        mockGlobalDataAccess.Setup(gda => gda.Load());
-    //        mockGlobalDataAccess.Setup(gda => gda.Save());
-    //        mockGlobalDataAccess.Setup(gda => gda.Get(It.IsAny<Guid>())).Returns<Guid>(id => new Currency { Id = id });
-
-    //        var service = new CategoryGroupService(mockGlobalDataAccess.Object, mockEntityDataAccess.Object,
-    //            CreateMockChildEntityDataAccess());
-
-    //        Assert.ThrowsAsync<ArgumentException>(async () => await service.Add(entity));
-    //    }
-
-    //    [Test]
-    //    public void ExceptionAddCategoryGroupCheckEntityWithSameNameTest()
+    //    public void ExceptionAddCategoryGroupCheckEntityWithSameNameNegativeTest()
     //    {
     //        var entity = new CategoryGroup
     //        {
@@ -123,6 +107,8 @@ public class AddCategoryGroupTests
 
     //        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(entity));
     //    }
+
+
 
     //    private ICategoryDataAccess CreateMockChildEntityDataAccess()
     //    {

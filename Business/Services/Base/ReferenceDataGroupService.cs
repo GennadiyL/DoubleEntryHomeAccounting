@@ -39,7 +39,6 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         };
 
         addedEntity.Parent = parent;
-        addedEntity.ParentId = parent?.Id;
         parent?.Children.Add(addedEntity);
 
         await groupRepository.Add(addedEntity);
