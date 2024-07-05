@@ -6,28 +6,28 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
 
-namespace Business.UnitTests.CategoryGroupTests;
+namespace Business.UnitTests.AccountGroupTests;
 
 [TestFixture]
-public class AddCategoryGroupTests
+public class AddAccountGroupTests
 {
     private IUnitOfWorkFactory _unitOfWorkFactory;
     private IUnitOfWork _unitOfWork;
-    private ICategoryGroupRepository _groupRepository;
-    private CategoryGroupService _service;
+    private IAccountGroupRepository _groupRepository;
+    private AccountGroupService _service;
 
     [SetUp]
     public void SetUp()
     {
-        _groupRepository = Substitute.For<ICategoryGroupRepository>();
+        _groupRepository = Substitute.For<IAccountGroupRepository>();
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup, Category>>().Returns(_groupRepository);
+        _unitOfWork.GetRepository<IGroupEntityRepository<AccountGroup, Account>>().Returns(_groupRepository);
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
 
-        _service = new CategoryGroupService(_unitOfWorkFactory);
+        _service = new AccountGroupService(_unitOfWorkFactory);
     }
 
     [TearDown]
@@ -38,20 +38,20 @@ public class AddCategoryGroupTests
 
     [TestCase("Name", "Description", true, 6)]
     [TestCase("Andy", "", false, 12001)]
-    [TestCase("StringName", "Words about CategoryGroup", true, 0)]
-    public async Task AddCategoryGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
+    [TestCase("StringName", "Words about AccountGroup", true, 0)]
+    public async Task AddAccountGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
     {
-        CategoryGroup parent = new CategoryGroup
+        AccountGroup parent = new AccountGroup
         {
             Id = Guid.NewGuid(),
             Name = "Group"
         };
-        CategoryGroup entity = null;
+        AccountGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetByParentId(parent.Id).Returns(parent);
         _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
-        await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
+        await _groupRepository.Add(Arg.Do<AccountGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
         {
@@ -75,14 +75,14 @@ public class AddCategoryGroupTests
 
     [TestCase("Name", "Description", true, 6)]
     [TestCase("Andy", "", false, 12001)]
-    [TestCase("StringName", "Words about CategoryGroup", true, 0)]
-    public async Task AddCategoryGroupWithNullParentPositiveTest(string name, string description, bool isFavorite, int maxOrder)
+    [TestCase("StringName", "Words about AccountGroup", true, 0)]
+    public async Task AddAccountGroupWithNullParentPositiveTest(string name, string description, bool isFavorite, int maxOrder)
     {
-        CategoryGroup entity = null;
+        AccountGroup entity = null;
 
-        _groupRepository.GetByParentId(default).Returns((CategoryGroup)null);
+        _groupRepository.GetByParentId(default).Returns((AccountGroup)null);
         _groupRepository.GetMaxOrder(default).Returns(maxOrder);
-        await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
+        await _groupRepository.Add(Arg.Do<AccountGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
         {
@@ -103,13 +103,13 @@ public class AddCategoryGroupTests
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityNullNegativeTest()
+    public void AddAccountGroupCheckEntityNullNegativeTest()
     {
         Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(null));
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityNameNullNegativeTest()
+    public void AddAccountGroupCheckEntityNameNullNegativeTest()
     {
         GroupParam param = new GroupParam
         {
@@ -121,9 +121,9 @@ public class AddCategoryGroupTests
     }
 
     [Test]
-    public void AddCategoryGroupWithMissingParentNegativeTest()
+    public void AddAccountGroupWithMissingParentNegativeTest()
     {
-        _groupRepository.GetById(Arg.Any<Guid>()).Returns((CategoryGroup)null);
+        _groupRepository.GetById(Arg.Any<Guid>()).Returns((AccountGroup)null);
 
         GroupParam param = new GroupParam
         {
@@ -137,19 +137,19 @@ public class AddCategoryGroupTests
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityWithSameNameNegativeTest()
+    public void AddAccountGroupCheckEntityWithSameNameNegativeTest()
     {
         const string secondName = "Second Name";
         const string firstName = "First Name";
 
-        CategoryGroup parent = new CategoryGroup
+        AccountGroup parent = new AccountGroup
         {
             Id = Guid.NewGuid(),
             Name = "Group"
         };
         
-        parent.Children.Add(new CategoryGroup() {Id = Guid.NewGuid() , Name = firstName});
-        parent.Children.Add(new CategoryGroup() { Id = Guid.NewGuid(), Name = secondName });
+        parent.Children.Add(new AccountGroup() {Id = Guid.NewGuid() , Name = firstName});
+        parent.Children.Add(new AccountGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetByParentId(parent.Id).Returns(parent);
