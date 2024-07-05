@@ -22,7 +22,6 @@ public class CorrespondentService
     protected override Func<IAccountRepository, Correspondent, Task<ICollection<Account>>> GetAccountsByEntity =>
         async (accountRepository, correspondent) => await accountRepository.GetByCorrespondentId(correspondent.Id);
 
-
     protected override Action<Correspondent, Account> AccountEntitySetter =>
         (correspondent, account) => account.Correspondent = correspondent;
 }

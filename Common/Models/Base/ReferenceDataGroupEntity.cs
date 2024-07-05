@@ -6,6 +6,7 @@ public abstract class ReferenceDataGroupEntity<TGroup, TElement> : ReferenceData
     where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
     where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
 {
+    public Guid? ParentId { get; set; }
     public TGroup Parent { get; set; }
     public ICollection<TGroup> Children { get; } = new List<TGroup>();
     public ICollection<TElement> Elements { get; } = new List<TElement>();

@@ -8,6 +8,7 @@ public interface IElementRepository<TGroup, TElement>
 {
     Task<ICollection<TElement>> GetByName(string name);
     Task<TGroup> GetByGroupId(Guid groupId);
+    [Obsolete]
     Task<TGroup> GetByGroupIdAndName(Guid groupId, string name);
     Task<int> GetMaxOrder(Guid groupId);
     Task<int> GetCount(Guid groupId);

@@ -26,6 +26,7 @@ public static class Guard
         where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
+        //TODO: Implementation
         TGroup group = await repository.GetByParentIdAndName(parentId, name);
         CheckEntityWithSameName(group.Children, id, name);
     }
@@ -34,6 +35,7 @@ public static class Guard
         where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
+        //TODO: Implementation
         TGroup group = await repository.GetByGroupIdAndName(groupId, name);
         CheckEntityWithSameName(group.Elements, id, name);
     }

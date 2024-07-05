@@ -5,7 +5,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Model;
 
 namespace Business.Services;
 
@@ -24,12 +23,12 @@ public class AccountService : IAccountService
     public AccountService(
         IUnitOfWorkFactory unitOfWorkFactory,
         IAccountGroupRepository accountGroupRepository,
-        IAccountRepository accountRepository, 
-        ICurrencyRepository currencyRepository, 
-        ICategoryRepository categoryRepository, 
-        ICorrespondentRepository correspondentRepository, 
-        IProjectRepository projectRepository, 
-        ITemplateRepository templateRepository, 
+        IAccountRepository accountRepository,
+        ICurrencyRepository currencyRepository,
+        ICategoryRepository categoryRepository,
+        ICorrespondentRepository correspondentRepository,
+        IProjectRepository projectRepository,
+        ITemplateRepository templateRepository,
         ITransactionRepository transactionRepository)
     {
         _unitOfWorkFactory = unitOfWorkFactory;
@@ -60,7 +59,7 @@ public class AccountService : IAccountService
             IsFavorite = param.IsFavorite,
             Order = await _accountRepository.GetMaxOrder(group.Id) + 1,
             Currency = await Getter.GetEntityById(_currencyRepository, param.CurrencyId),
-            Category = param.CategoryId == default ? default : await Getter.GetEntityById(_categoryRepository , param.CategoryId.Value),
+            Category = param.CategoryId == default ? default : await Getter.GetEntityById(_categoryRepository, param.CategoryId.Value),
             Project = param.ProjectId == default ? default : await Getter.GetEntityById(_projectRepository, param.ProjectId.Value),
             Correspondent = param.CorrespondentId == default ? default : await Getter.GetEntityById(_correspondentRepository, param.CorrespondentId.Value),
         };
@@ -82,10 +81,8 @@ public class AccountService : IAccountService
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        Account updatedEntity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
-        AccountGroup group = await _accountRepository.GetByGroupId(updatedEntity.Group.Id);
-
-        await Guard.CheckElementWithSameName(_accountRepository, group.Id, entityId, param.Name);
+        Account updatedEntity = await Getter.GetEntityById(_accountRepository, entityId);
+        await Guard.CheckElementWithSameName(_accountRepository, updatedEntity.GroupId, entityId, param.Name);
 
         Category category = param.CategoryId == default ? default : await Getter.GetEntityById(_categoryRepository, param.CategoryId.Value);
         Project project = param.ProjectId == default ? default : await Getter.GetEntityById(_projectRepository, param.ProjectId.Value);
@@ -108,7 +105,7 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account deletedEntity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
+        Account deletedEntity = await Getter.GetEntityById(_accountRepository, entityId);
         if (await _transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new Exception("Account cannot be delete, it contains transaction.");
@@ -121,9 +118,9 @@ public class AccountService : IAccountService
         AccountGroup group = await _accountRepository.GetByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
-        await _accountRepository.Delete(deletedEntity.Id);
-
         OrderingUtils.Reorder(group.Elements);
+
+        await _accountRepository.Delete(deletedEntity.Id);
         await _accountRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
@@ -133,13 +130,16 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
-        if (entity.Order != order)
+        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        if (entity.Order == order)
         {
-            AccountGroup group = await _accountRepository.GetByGroupId(entity.Group.Id);
-            OrderingUtils.SetOrder(group.Elements, entity, order);
-            await _accountRepository.Update(group.Elements);
+            return;
         }
+
+        AccountGroup group = await _accountRepository.GetByGroupId(entity.Group.Id);
+        OrderingUtils.SetOrder(group.Elements, entity, order);
+
+        await _accountRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -148,12 +148,15 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
-        if (entity.IsFavorite != isFavorite)
+        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
+        if (entity.IsFavorite == isFavorite)
         {
-            entity.IsFavorite = isFavorite;
-            await _accountRepository.Update(entity);
+            return;
         }
+
+        entity.IsFavorite = isFavorite;
+
+        await _accountRepository.Update(entity);
 
         await unitOfWork.SaveChanges();
     }
@@ -162,27 +165,27 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account entity = await Getter.GetElementWithGroupById(_accountRepository, entityId);
+        Account entity = await Getter.GetEntityById(_accountRepository, entityId);
         AccountGroup fromGroup = await _accountRepository.GetByGroupId(entity.Group.Id);
         AccountGroup toGroup = await _accountRepository.GetByGroupId(groupId);
 
-        if (fromGroup.Id != toGroup.Id)
+        if (fromGroup.Id == toGroup.Id)
         {
-            await Guard.CheckElementWithSameName(_accountRepository, toGroup.Id, entity.Id, entity.Name);
-            int newOrder = await _accountRepository.GetMaxOrder(toGroup.Id) + 1;
-
-            entity.Group = toGroup;
-            toGroup.Elements.Add(entity);
-            fromGroup.Elements.Remove(entity);
-
-            OrderingUtils.Reorder(fromGroup.Elements);
-            OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
-
-            await _accountRepository.Update(toGroup.Elements);
-            await _accountRepository.Update(fromGroup.Elements);
-            await _accountGroupRepository.Update(toGroup);
-            await _accountGroupRepository.Update(fromGroup);
+            return;
         }
+
+        await Guard.CheckElementWithSameName(_accountRepository, toGroup.Id, entity.Id, entity.Name);
+        int newOrder = await _accountRepository.GetMaxOrder(toGroup.Id) + 1;
+
+        fromGroup.Elements.Remove(entity);
+        entity.Group = toGroup;
+        toGroup.Elements.Add(entity);
+
+        OrderingUtils.Reorder(fromGroup.Elements);
+        OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
+
+        await _accountRepository.Update(toGroup.Elements);
+        await _accountRepository.Update(fromGroup.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -191,43 +194,42 @@ public class AccountService : IAccountService
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        Account primaryAccount = await Getter.GetElementWithGroupById(_accountRepository, primaryId);
-        Account secondaryAccount = await Getter.GetElementWithGroupById(_accountRepository, secondaryId);
+        Account primaryAccount = await Getter.GetEntityById(_accountRepository, primaryId);
+        Account secondaryAccount = await Getter.GetEntityById(_accountRepository, secondaryId);
 
-        if (primaryAccount.Id != secondaryAccount.Id)
+        if (primaryAccount.Id == secondaryAccount.Id)
         {
-            primaryAccount =
-                await _accountRepository.GetById(primaryAccount.Id, Include<Account>.Create(e => e.Currency).Add(e => e.Group));
-            secondaryAccount =
-                await _accountRepository.GetById(secondaryAccount.Id, Include<Account>.Create(e => e.Currency).Add(e => e.Group));
-            if (primaryAccount.Currency.Id != secondaryAccount.Currency.Id)
-            {
-                throw new ArgumentException("Can't combine accounts with different currencies");
-            }
-
-            ICollection<TemplateEntry> templateEnties = await _templateRepository.GetEntriesByAccountId(secondaryAccount.Id);
-            IList<Template> templates = templateEnties.Select(e => e.Template).ToList();
-            foreach (TemplateEntry templateEntry in templateEnties)
-            {
-                templateEntry.Account = primaryAccount;
-            }
-            await _templateRepository.Update(templates);
-
-            ICollection<TransactionEntry> transactionEntries = await _transactionRepository.GetEntriesByAccountId(secondaryAccount.Id);
-            IList<Transaction> transactions = transactionEntries.Select(e => e.Transaction).ToList();
-            foreach (TransactionEntry transactionEntry in transactionEntries)
-            {
-                transactionEntry.Account = primaryAccount;
-                
-            }
-            await _transactionRepository.Update(transactions);
-
-            AccountGroup secondaryGroup = await _accountRepository.GetByGroupId(secondaryAccount.Group.Id);
-            secondaryGroup.Elements.Remove(secondaryAccount);
-            OrderingUtils.Reorder(secondaryGroup.Elements);
-            await _accountRepository.Delete(secondaryAccount.Id);
-            await _accountRepository.Update(secondaryGroup.Elements);
+            return;
         }
+        if (primaryAccount.CurrencyId != secondaryAccount.CurrencyId)
+        {
+            throw new ArgumentException("Can't combine accounts with different currencies");
+        }
+
+        ICollection<TemplateEntry> templateEntries =
+            await _templateRepository.GetEntriesByAccountId(secondaryAccount.Id);
+        IList<Template> templates = templateEntries.Select(e => e.Template).ToList();
+        foreach (TemplateEntry templateEntry in templateEntries)
+        {
+            templateEntry.Account = primaryAccount;
+        }
+
+        ICollection<TransactionEntry> transactionEntries =
+            await _transactionRepository.GetEntriesByAccountId(secondaryAccount.Id);
+        IList<Transaction> transactions = transactionEntries.Select(e => e.Transaction).ToList();
+        foreach (TransactionEntry transactionEntry in transactionEntries)
+        {
+            transactionEntry.Account = primaryAccount;
+        }
+
+        AccountGroup secondaryGroup = await _accountRepository.GetByGroupId(secondaryAccount.GroupId);
+        secondaryGroup.Elements.Remove(secondaryAccount);
+        OrderingUtils.Reorder(secondaryGroup.Elements);
+
+        await _templateRepository.Update(templates);
+        await _transactionRepository.Update(transactions);
+        await _accountRepository.Delete(secondaryAccount.Id);
+        await _accountRepository.Update(secondaryGroup.Elements);
 
         await unitOfWork.SaveChanges();
     }

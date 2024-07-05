@@ -15,7 +15,7 @@ public class CurrencyService : ICurrencyService
     private readonly ICurrencyRepository _currencyRepository;
     private readonly IAccountRepository _accountRepository;
     public CurrencyService(
-        IUnitOfWorkFactory unitOfWorkFactory, 
+        IUnitOfWorkFactory unitOfWorkFactory,
         ICurrencyRepository currencyRepository,
         IAccountRepository accountRepository)
     {
@@ -100,12 +100,15 @@ public class CurrencyService : ICurrencyService
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
-        if (currency.Order != order)
+        if (currency.Order == order)
         {
-            ICollection<Currency> currencies = await _currencyRepository.GetAll();
-            OrderingUtils.SetOrder(currencies, currency, order);
-            await _currencyRepository.Update(currencies);
+            return;
         }
+
+        ICollection<Currency> currencies = await _currencyRepository.GetAll();
+        OrderingUtils.SetOrder(currencies, currency, order);
+
+        await _currencyRepository.Update(currencies);
 
         await unitOfWork.SaveChanges();
     }
@@ -115,11 +118,13 @@ public class CurrencyService : ICurrencyService
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         Currency currency = await Getter.GetEntityById(_currencyRepository, entityId);
-        if (currency.IsFavorite != isFavorite)
+        if (currency.IsFavorite == isFavorite)
         {
-            currency.IsFavorite = isFavorite;
-            await _currencyRepository.Update(currency);
+            return;
         }
+
+        currency.IsFavorite = isFavorite;
+        await _currencyRepository.Update(currency);
 
         await unitOfWork.SaveChanges();
     }
@@ -139,5 +144,4 @@ public class CurrencyService : ICurrencyService
             throw new ArgumentException($"Rate must be more than 0.");
         }
     }
-
 }
