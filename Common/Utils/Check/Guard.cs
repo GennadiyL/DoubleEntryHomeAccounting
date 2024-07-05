@@ -26,16 +26,16 @@ public static class Guard
         where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
-        ICollection<TGroup> entities = await repository.GetByParentIdAndName(parentId, name);
-        CheckEntityWithSameName(entities, id, name);
+        TGroup group = await repository.GetByParentIdAndName(parentId, name);
+        CheckEntityWithSameName(group.Children, id, name);
     }
 
     public static async Task CheckElementWithSameName<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
         where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
         where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
     {
-        ICollection<TElement> entities = await repository.GetByGroupIdAndName(groupId, name);
-        CheckEntityWithSameName(entities, id, name);
+        TGroup group = await repository.GetByGroupIdAndName(groupId, name);
+        CheckEntityWithSameName(group.Elements, id, name);
     }
 
     private static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)

@@ -136,7 +136,7 @@ public class CurrencyService : ICurrencyService
     {
         if (initialRate <= 0)
         {
-            throw new ArgumentException($"Initial rate cannot be less than zero");
+            throw new ArgumentException($"Rate must be more than 0.");
         }
     }
 

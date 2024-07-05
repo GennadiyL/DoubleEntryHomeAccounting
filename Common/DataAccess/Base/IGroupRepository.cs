@@ -8,7 +8,7 @@ public interface IGroupRepository<TGroup, TElement>
 {
     Task<ICollection<TGroup>> GetByName(string name);
     Task<TGroup> GetByParentId(Guid? parentId);
-    Task<ICollection<TGroup>> GetByParentIdAndName(Guid? parentId, string name);
+    Task<TGroup> GetByParentIdAndName(Guid? parentId, string name);
     Task<int> GetMaxOrder(Guid? parentId);
     Task<int> GetCount(Guid? parentId);
 }

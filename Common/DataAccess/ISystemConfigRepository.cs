@@ -3,6 +3,6 @@
 public interface ISystemConfigRepository
 {
     Task<string> GetMainCurrencyIsoCode();
-    Task<DateTime> GetMinDate();
-    Task<DateTime> GetMaxDate();
+    Task<DateOnly> GetMinDate();
+    Task<DateOnly> GetMaxDate();
 }

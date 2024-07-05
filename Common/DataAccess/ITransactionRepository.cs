@@ -6,6 +6,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 
 public interface ITransactionRepository : IEntityRepository<Transaction>
 {
+    Task<Transaction> GetTransactionById(Guid id);
     Task<ICollection<TransactionEntry>> GetEntriesByAccountId(Guid accountId);
     Task<int> GetCountEntriesByAccountId(Guid accountId);
 }
