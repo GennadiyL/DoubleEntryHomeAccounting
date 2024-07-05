@@ -8,7 +8,6 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Model
 
         private Include()
         {
-
         }
 
         public static Include<T> Create<TP>(Func<T, TP> func)

@@ -23,8 +23,8 @@ public static class Guard
     }
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
-        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+        where TGroup : class, IGroupEntity<TGroup, TElement>, INamedEntity
+        where TElement : class, IElementEntity<TGroup, TElement>
     {
         //TODO: Implementation
         TGroup group = await repository.GetByParentIdAndName(parentId, name);
@@ -32,8 +32,8 @@ public static class Guard
     }
 
     public static async Task CheckElementWithSameName<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
-        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement>, INamedEntity
     {
         //TODO: Implementation
         TGroup group = await repository.GetByGroupIdAndName(groupId, name);
@@ -41,7 +41,7 @@ public static class Guard
     }
 
     private static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
-        where T : IEntity, INamedEntity
+        where T : INamedEntity
     {
         if (entities
                 .Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -52,8 +52,8 @@ public static class Guard
     }
 
     public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement>
     {
         if (await repository.GetCount(groupId) > 0)
         {
@@ -61,9 +61,9 @@ public static class Guard
         }
     }
 
-    public static async Task CheckExistedSubgroupsInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>
-        where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+    public static async Task CheckExistedChildrenInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid groupId)
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement>
     {
         if (await repository.GetCount(groupId) > 0)
         {

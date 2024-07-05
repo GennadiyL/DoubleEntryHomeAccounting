@@ -9,8 +9,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 namespace Business.Services.Base;
 
 public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IReferenceDataGroupService<TGroup, TElement, TParam>
-    where TGroup : class, IReferenceDataGroupEntity<TGroup, TElement>, new()
-    where TElement : class, IReferenceDataElementEntity<TGroup, TElement>
+    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceDataEntity, new()
+    where TElement : class, IElementEntity<TGroup, TElement>
     where TParam : class, INamedParam, IFavoriteParam, IGroupParam
 
 {
@@ -82,7 +82,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
 
         TGroup deletedEntity = await Getter.GetEntityById(_groupRepository, entityId);
 
-        await Guard.CheckExistedSubgroupsInTheGroup(_groupRepository, deletedEntity.Id);
+        await Guard.CheckExistedChildrenInTheGroup(_groupRepository, deletedEntity.Id);
         await Guard.CheckExistedElementsInTheGroup(_elementRepository, deletedEntity.Id);
 
         TGroup parent = await _groupRepository.GetByParentId(deletedEntity.ParentId);
@@ -156,7 +156,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         throw new NotImplementedException();
     }
 
-    public Task CombineGroups(Guid primaryId, Guid secondaryId)
+    public Task CombineChildren(Guid primaryId, Guid secondaryId)
     {
         //TODO: Implementation
         throw new NotImplementedException();

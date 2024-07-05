@@ -3,9 +3,9 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
-public interface IReferenceDataGroupService<TGroup, TElement, in TParam> : IReferenceDataService<TElement, TParam>, IGroupService<TGroup, TElement>
-    where TGroup : class, IEntity, IFavoriteEntity, IOrderedEntity, IReferenceDataGroupEntity<TGroup, TElement>
-    where TElement : class, IEntity, IFavoriteEntity, IOrderedEntity, IReferenceDataElementEntity<TGroup, TElement>
+public interface IReferenceDataGroupService<TGroup, TElement, in TParam> : IReferenceDataService<TGroup, TParam>, IGroupService<TGroup, TElement>
+    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceDataEntity
+    where TElement : class, IElementEntity<TGroup, TElement>
     where TParam : class, IParam
 {
 }

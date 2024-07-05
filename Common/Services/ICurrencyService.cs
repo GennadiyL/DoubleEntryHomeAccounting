@@ -4,7 +4,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
-public interface ICurrencyService : IOrderedEntityService<Currency>, IFavoriteService<Currency>
+public interface ICurrencyService : IOrderedService<Currency>, IFavoriteService<Currency>
 {
     Task<Guid> Add(CurrencyParam param, decimal initialRate);
     Task Update(CurrencyParam param);
