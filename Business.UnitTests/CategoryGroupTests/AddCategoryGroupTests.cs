@@ -10,6 +10,28 @@ namespace Business.UnitTests.CategoryGroupTests;
 [TestFixture]
 public class AddCategoryGroupTests
 {
+    private IUnitOfWorkFactory _unitOfWorkFactory;
+    private IUnitOfWork _unitOfWork;
+    private IGroupEntityRepository<CategoryGroup, Category> _groupRepository;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _groupRepository = Substitute.For<IGroupEntityRepository<CategoryGroup, Category>>();
+
+        _unitOfWork = Substitute.For<IUnitOfWork>();
+        _unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup, Category>>().Returns(_groupRepository);
+
+        _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
+        _unitOfWorkFactory.Create().Returns(_unitOfWork);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _unitOfWork?.Dispose();
+    }
+
     [TestCase("Name", "Description", true, 6)]
     [TestCase("Andy", "", false, 12001)]
     [TestCase("StringName", "Words about CategoryGroup", true, 0)]
@@ -22,20 +44,13 @@ public class AddCategoryGroupTests
         };
         CategoryGroup entity = null;
 
-        IGroupEntityRepository<CategoryGroup, Category> groupRepository = Substitute.For<IGroupEntityRepository<CategoryGroup, Category>>();
-        groupRepository.GetById(parent.Id, null).Returns(parent);
-        groupRepository.GetByParentId(parent.Id).Returns(parent);
-        groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
-        await groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
+        _groupRepository.GetById(parent.Id, null).Returns(parent);
+        _groupRepository.GetByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
+        await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
-        IUnitOfWork unitOfWork = Substitute.For<IUnitOfWork>();
-        unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup,Category>>().Returns(groupRepository);
-
-        IUnitOfWorkFactory unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
-        unitOfWorkFactory.Create().Returns(unitOfWork);
-
-        var service = new CategoryGroupService(unitOfWorkFactory);
-        GroupParam groupParam = new GroupParam
+        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
+        GroupParam param = new GroupParam
         {
             Name = name,
             Description = description,
@@ -43,50 +58,74 @@ public class AddCategoryGroupTests
             ParentId = parent.Id,
         };
 
-        await service.Add(groupParam);
+        await service.Add(param);
 
         Assert.IsNotNull(entity);
         Assert.IsTrue(ReferenceEquals(parent, entity.Parent));
         Assert.IsTrue(parent.Children.Contains(entity));
 
-        Assert.That(name, Is.EqualTo(groupParam.Name));
+        Assert.That(name, Is.EqualTo(param.Name));
         Assert.That(entity.Description, Is.EqualTo(description));
         Assert.That(entity.IsFavorite, Is.EqualTo(isFavorite));
         Assert.That(entity.Order, Is.EqualTo(maxOrder + 1));
     }
 
-    //TODO: AddCategoryGroupWithNullParentPositiveTest
+    [TestCase("Name", "Description", true, 6)]
+    [TestCase("Andy", "", false, 12001)]
+    [TestCase("StringName", "Words about CategoryGroup", true, 0)]
+    public async Task AddCategoryGroupWithNullParentPositiveTest(string name, string description, bool isFavorite, int maxOrder)
+    {
+        CategoryGroup entity = null;
+
+        _groupRepository.GetByParentId(default).Returns((CategoryGroup)null);
+        _groupRepository.GetMaxOrder(default).Returns(maxOrder);
+        await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
+
+        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
+        GroupParam param = new GroupParam
+        {
+            Name = name,
+            Description = description,
+            IsFavorite = isFavorite,
+            ParentId = null,
+        };
+
+        await service.Add(param);
+
+        Assert.IsNotNull(entity);
+        Assert.That(entity.Parent, Is.EqualTo(null));
+
+        Assert.That(name, Is.EqualTo(param.Name));
+        Assert.That(entity.Description, Is.EqualTo(description));
+        Assert.That(entity.IsFavorite, Is.EqualTo(isFavorite));
+        Assert.That(entity.Order, Is.EqualTo(maxOrder + 1));
+    }
+
 
     //TODO: AddCategoryGroupWithMissingParentNegativeTest
 
-    //    [Test]
-    //    public void AddCategoryGroupCheckEntityNullNegativeTest()
-    //    {
-    //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
+    [Test]
+    public void AddCategoryGroupCheckEntityNullNegativeTest()
+    {
+        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
 
-    //        var service = new CategoryGroupService(CreateMockGlobalDataAccess(), mockEntityDataAccess.Object,
-    //            CreateMockChildEntityDataAccess());
-    //        CategoryGroup entity = null;
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(null));
+    }
 
-    //        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(entity));
-    //    }
+    [Test]
+    public void AddCategoryGroupCheckEntityNameNullNegativeTest()
+    {
+        GroupParam param = new GroupParam
+        {
+            Name = null,
+            Description = "description",
+            IsFavorite = true
+        };
 
-    //    [Test]
-    //    public void AddCategoryGroupCheckEntityNameNullNegativeTest()
-    //    {
-    //        var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
+        CategoryGroupService service = new CategoryGroupService(_unitOfWorkFactory);
 
-    //        var service = new CategoryGroupService(CreateMockGlobalDataAccess(), mockEntityDataAccess.Object,
-    //            CreateMockChildEntityDataAccess());
-    //        var entity = new CategoryGroup
-    //        {
-    //            Name = null,
-    //            Description = "description",
-    //            IsFavorite = true
-    //        };
-
-    //        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(entity));
-    //    }
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Add(param));
+    }
 
     //    [Test]
     //    public void ExceptionAddCategoryGroupCheckEntityWithSameNameNegativeTest()

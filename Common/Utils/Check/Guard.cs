@@ -27,6 +27,10 @@ public static class Guard
         where TElement : class, IElementEntity<TGroup, TElement>
     {
         TGroup group = await repository.GetByParentId(parentId);
+        if (group == null)
+        {
+            return;
+        }
         CheckEntityWithSameName(group.Children, id, name);
     }
 
