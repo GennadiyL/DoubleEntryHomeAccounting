@@ -53,8 +53,7 @@ public class TransactionService : ITransactionService
 
         await CheckInputTransactionParam(systemConfigRepository, param);
 
-        Transaction updatedEntity = await transactionRepository.GetTransactionById(entityId)
-                                    ?? throw new ArgumentNullException($"Transaction #{entityId} does not exist");
+        Transaction updatedEntity = await Getter.GetEntityById(transactionRepository.GetTransactionById, entityId);
 
         List<TransactionEntry> oldEntries = updatedEntity.Entries;
         List<TransactionEntry> newEntries = await CreateEntries(systemConfigRepository, currencyRepository, accountRepository, param, updatedEntity);
@@ -78,8 +77,7 @@ public class TransactionService : ITransactionService
 
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Transaction deletedTransaction = await transactionRepository.GetTransactionById(entityId)
-                                         ?? throw new ArgumentNullException($"Transaction #{entityId} does not exist");
+        Transaction deletedTransaction = await Getter.GetEntityById(transactionRepository.GetTransactionById, entityId); 
         await transactionRepository.Delete(deletedTransaction.Id);
     }
 
@@ -94,8 +92,7 @@ public class TransactionService : ITransactionService
         List<Transaction> deletedTransactions = new List<Transaction>();
         foreach (Guid transactionId in transactionIds)
         {
-            Transaction deletedTransaction = await transactionRepository.GetTransactionById(transactionId)
-                                             ?? throw new ArgumentNullException($"Transaction #{transactionId} does not exist");
+            Transaction deletedTransaction = await Getter.GetEntityById(transactionRepository.GetTransactionById, transactionId);
             deletedTransactions.Add(deletedTransaction);
         }
 
@@ -143,7 +140,7 @@ public class TransactionService : ITransactionService
                 throw new ArgumentException("Currency rate must be more than 0");
             }
 
-            Account account = await Getter.GetEntityById(accountRepository, entryParam.AccountId);
+            Account account = await Getter.GetEntityById(g => accountRepository.GetById(g), entryParam.AccountId);
 
             if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {

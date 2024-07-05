@@ -27,7 +27,7 @@ public class TemplateService : ITemplateService
         Template addedEntity = new Template();
         List<TemplateEntry> entries = await CreateEntries(accountRepository, param, addedEntity);
 
-        TemplateGroup group = await Getter.GetEntityById(templateGroupRepository, param.GroupId);
+        TemplateGroup group = await Getter.GetEntityById(g => templateGroupRepository.GetById(g), param.GroupId);
         await Guard.CheckElementWithSameName(templateRepository, group.Id, Guid.Empty, param.Name);
         
         addedEntity.Name = param.Name;
@@ -54,8 +54,7 @@ public class TemplateService : ITemplateService
 
         CheckInputTemplateParam(param);
 
-        Template updatedEntity = await templateRepository.GetTemplateById(entityId)
-                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist");
+        Template updatedEntity = await Getter.GetEntityById(templateRepository.GetTemplateById, entityId);
         await Guard.CheckElementWithSameName(templateRepository, updatedEntity.GroupId, entityId, param.Name);
 
         List<TemplateEntry> oldEntries = updatedEntity.Entries;
@@ -79,8 +78,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template deletedEntity = await templateRepository.GetTemplateById(entityId)
-                                 ?? throw new ArgumentNullException($"Template #{entityId} does not exist");
+        Template deletedEntity = await Getter.GetEntityById(templateRepository.GetTemplateById, entityId); 
 
         TemplateGroup group = await templateRepository.GetByGroupId(deletedEntity.GroupId);
 
@@ -99,7 +97,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(templateRepository, entityId);
+        Template template = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
         if (template.Order == order)
         {
             return;
@@ -119,7 +117,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(templateRepository, entityId);
+        Template template = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
         if (template.IsFavorite == isFavorite)
         {
             return;
@@ -138,7 +136,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template entity = await Getter.GetEntityById(templateRepository, entityId);
+        Template entity = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
         TemplateGroup fromGroup = await templateRepository.GetByGroupId(entity.Group.Id);
         TemplateGroup toGroup = await templateRepository.GetByGroupId(groupId);
 
@@ -176,7 +174,7 @@ public class TemplateService : ITemplateService
             TemplateEntry templateEntry = new TemplateEntry
             {
                 Id = Guid.NewGuid(),
-                Account = await Getter.GetEntityById(accountRepository, entry.AccountId),
+                Account = await Getter.GetEntityById(g => accountRepository.GetById(g), entry.AccountId),
                 Amount = entry.Amount,
                 Template = template,
             };
