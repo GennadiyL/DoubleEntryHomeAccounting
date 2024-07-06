@@ -103,13 +103,13 @@ public class AddCategoryGroupTests
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityNullNegativeTest()
+    public void AddCategoryGroupCheckNullParamNegativeTest()
     {
         Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(null));
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityNameNullNegativeTest()
+    public void AddCategoryGroupCheckNullNameNegativeTest()
     {
         GroupParam param = new GroupParam
         {
@@ -137,7 +137,7 @@ public class AddCategoryGroupTests
     }
 
     [Test]
-    public void AddCategoryGroupCheckEntityWithSameNameNegativeTest()
+    public void AddCategoryGroupCheckWithSameNameNegativeTest()
     {
         const string secondName = "Second Name";
         const string firstName = "First Name";

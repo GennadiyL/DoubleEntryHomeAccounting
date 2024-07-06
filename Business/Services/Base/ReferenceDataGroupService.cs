@@ -58,7 +58,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         Guard.CheckParamNameForNull(param);
 
         TGroup updatedEntity = await Getter.GetEntityById(g => groupRepository.GetById(g), entityId);
-        await Guard.CheckGroupWithSameName(groupRepository, updatedEntity.ParentId, updatedEntity.Id, updatedEntity.Name);
+        await Guard.CheckGroupWithSameName(groupRepository, updatedEntity.ParentId, updatedEntity.Id, param.Name);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
