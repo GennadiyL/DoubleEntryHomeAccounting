@@ -67,6 +67,23 @@ public class DeleteCategoryGroupTests
 
     }
 
+    [Test]
+    public async Task DeleteCategoryGroupWithNullParentPositiveTest()
+    {
+        Guid deletedId = Guid.Empty;
+        CategoryGroup child1 = new CategoryGroup { Id = Guid.NewGuid(), Name = "firstName", ParentId = default, Order = 1 };
+        CategoryGroup child2 = new CategoryGroup { Id = Guid.NewGuid(), Name = "secondName", ParentId = default, Order = 2 };
+
+        _groupRepository.GetById(child1.Id).Returns(child1);
+        _groupRepository.Where(Arg.Any<Func<CategoryGroup, bool>>()).Returns(new List<CategoryGroup>() {child2});
+        await _groupRepository.Delete(Arg.Do<Guid>(e => deletedId = e));
+
+        await _service.Delete(child1.Id);
+
+        Assert.That(child2.Order, Is.EqualTo(1));
+        Assert.That(child1.Id, Is.EqualTo(deletedId));
+    }
+
     //[Test]
     //public void DeleteCategoryGroupCheckAndGetEntityByIdExceptionTest()
     //{
