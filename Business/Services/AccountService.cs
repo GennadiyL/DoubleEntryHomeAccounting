@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -207,7 +208,7 @@ public class AccountService : IAccountService
         }
         if (primaryAccount.CurrencyId != secondaryAccount.CurrencyId)
         {
-            throw new ArgumentException("Can't combine accounts with different currencies");
+            throw new MismatchingCurrenciesException();
         }
 
         ICollection<TemplateEntry> templateEntries =

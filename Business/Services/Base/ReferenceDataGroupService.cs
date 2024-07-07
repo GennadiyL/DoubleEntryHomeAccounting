@@ -167,5 +167,4 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         //TODO: Implementation
         throw new NotImplementedException();
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 
@@ -57,9 +58,10 @@ public static class Guard
         where TGroup : class, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement>
     {
-        if (await repository.GetCount(groupId) > 0)
+        int count = await repository.GetCount(groupId);
+        if (count > 0)
         {
-            throw new ArgumentException("Group cannot be deleted. It contains elements");
+            throw new GroupContainsSubGroupsException(typeof(TGroup), count);
         }
     }
 
@@ -67,9 +69,10 @@ public static class Guard
         where TGroup : class, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement>
     {
-        if (await repository.GetCount(groupId) > 0)
+        int count = await repository.GetCount(groupId);
+        if (count > 0)
         {
-            throw new ArgumentException("Group  cannot be deleted. It contains subgroups");
+            throw new GroupContainsElementException(typeof(TGroup), count);
         }
     }
 

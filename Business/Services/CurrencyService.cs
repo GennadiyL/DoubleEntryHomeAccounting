@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -76,7 +77,7 @@ public class CurrencyService : ICurrencyService
         Currency deletedCurrency = await currencyRepository.GetByIsoCode(isoCode);
         if (deletedCurrency == null)
         {
-            throw new ArgumentNullException($"$Currency with iso code '{isoCode}' does not exist in DB");
+            throw new MissingCurrencyException(isoCode);
         }
 
         if ((await accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())

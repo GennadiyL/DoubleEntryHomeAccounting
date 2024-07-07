@@ -5,6 +5,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using NSubstitute;
 using System.Linq;
+using GLSoft.DoubleEntryHomeAccounting.Common.Params;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
 namespace Business.UnitTests.CategoryGroupTests;
 
@@ -83,6 +85,50 @@ public class DeleteCategoryGroupTests
         Assert.That(child2.Order, Is.EqualTo(1));
         Assert.That(child1.Id, Is.EqualTo(deletedId));
     }
+
+    [Test]
+    public void DeleteCategoryGroupWithMissingEntityNegativeTest()
+    {
+        CategoryGroup entity = new CategoryGroup
+        {
+            Name = "originalName",
+            Description = "originalDescription",
+            IsFavorite = true,
+            ParentId = default
+        };
+        Guid entityIdGuid = Guid.NewGuid();
+        Guid passedIdGuid = Guid.NewGuid();
+
+        _groupRepository.GetById(entityIdGuid).Returns(entity);
+
+        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Delete(passedIdGuid));
+    }
+
+    [Test]
+    public void DeleteCategoryGroupWithExistedSubGroupsNegativeTest()
+    {
+        CategoryGroup entity = new CategoryGroup
+        {
+            Name = "originalName",
+            Description = "originalDescription",
+            IsFavorite = true,
+            ParentId = default
+        };
+        CategoryGroup child1 = new CategoryGroup { Id = Guid.NewGuid(), Name = "firstName", ParentId = entity.Id, Order = 1 };
+        CategoryGroup child2 = new CategoryGroup { Id = Guid.NewGuid(), Name = "secondName", ParentId = entity.Id, Order = 2 };
+        entity.Children.Add(child1);
+        entity.Children.Add(child2);
+
+        _groupRepository.GetById(entity.Id).Returns(entity);
+        _groupRepository.GetCount(entity.Id).Returns(entity.Children.Count);
+
+        Assert.ThrowsAsync<GroupContainsElementException>(async () => await _service.Delete(entity.Id));
+    }
+
+    //TODO: Deleted group has elements
+    //TODO: Cannot find parent
+
+
 
     //[Test]
     //public void DeleteCategoryGroupCheckAndGetEntityByIdExceptionTest()
