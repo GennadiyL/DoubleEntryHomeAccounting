@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -192,7 +193,7 @@ public class TemplateService : ITemplateService
 
         if (param.Entries == null || param.Entries.Count < 2)
         {
-            throw new ArgumentException("Invalid amount of Transaction Entries: amount must be more than 1");
+            throw new EntriesAmountException();
         }
     }
 }

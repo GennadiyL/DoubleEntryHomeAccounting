@@ -2,11 +2,11 @@
 {
     public class MissingCurrencyException : ApplicationBaseException
     {
-        private const string InnerMessage = "Currency with iso code '{0}' does not exist in app";
+        private const string InnerMessage = "Cannot find currency with iso code '{0}'.";
 
         public string IsoCode { get; }
 
-        public MissingCurrencyException(string isoCode) : base(isoCode, null)
+        public MissingCurrencyException(string isoCode) : this(isoCode, null)
         {
         }
 

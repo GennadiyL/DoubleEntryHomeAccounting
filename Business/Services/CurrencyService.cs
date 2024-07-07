@@ -135,7 +135,7 @@ public class CurrencyService : ICurrencyService
     {
         if (string.IsNullOrEmpty(isoCode))
         {
-            throw new ArgumentNullException($"IsoCode as entity cannot be a null or empty");
+            throw new InvalidCurrencyIsoCodeException(null);
         }
     }
 
@@ -143,7 +143,7 @@ public class CurrencyService : ICurrencyService
     {
         if (initialRate <= 0)
         {
-            throw new ArgumentException($"Rate must be more than 0.");
+            throw new InvalidCurrencyRateException(initialRate);
         }
     }
 }

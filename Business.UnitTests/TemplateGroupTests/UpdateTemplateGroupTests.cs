@@ -156,7 +156,7 @@ public class UpdateTemplateGroupTests
     [Test]
     public void UpdateTemplateGroupCheckNullParamNegativeTest()
     {
-        Assert.ThrowsAsync<MissingInputParameterException>(async () => await _service.Update(Guid.NewGuid(), null));
+        Assert.ThrowsAsync<NullParameterException>(async () => await _service.Update(Guid.NewGuid(), null));
     }
 
     [Test]
@@ -168,7 +168,7 @@ public class UpdateTemplateGroupTests
             Description = "description",
             IsFavorite = true
         };
-        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Update(Guid.NewGuid(), param));
+        Assert.ThrowsAsync<NullNameException>(async () => await _service.Update(Guid.NewGuid(), param));
     }
 
     [Test]
@@ -193,7 +193,7 @@ public class UpdateTemplateGroupTests
             IsFavorite = true
         };
 
-        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Update(passedIdGuid, param));
+        Assert.ThrowsAsync<NullNameException>(async () => await _service.Update(passedIdGuid, param));
     }
 
     [Test]

@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+using System.Globalization;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
@@ -24,7 +25,7 @@ public static class CurrencyDataUtils
                 .FirstOrDefault(ri => ri.ISOCurrencySymbol == isoCode);
         if (regionInfo == null)
         {
-            throw new ArgumentNullException($"Incorrect Currency IsoCode");
+            throw new InvalidCurrencyIsoCodeException(isoCode);
         }
 
         return new CurrencyData

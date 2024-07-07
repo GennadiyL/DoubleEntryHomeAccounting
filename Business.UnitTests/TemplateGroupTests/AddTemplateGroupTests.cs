@@ -106,7 +106,7 @@ public class AddTemplateGroupTests
     [Test]
     public void AddTemplateGroupCheckNullParamNegativeTest()
     {
-        Assert.ThrowsAsync<MissingInputParameterException>(async () => await _service.Add(null));
+        Assert.ThrowsAsync<NullParameterException>(async () => await _service.Add(null));
     }
 
     [Test]
@@ -118,7 +118,7 @@ public class AddTemplateGroupTests
             Description = "description",
             IsFavorite = true
         };
-        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Add(param));
+        Assert.ThrowsAsync<NullNameException>(async () => await _service.Add(param));
     }
 
     [Test]

@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Enums;
@@ -113,7 +114,7 @@ public class TransactionService : ITransactionService
 
         if (param.Entries == null || param.Entries.Count < 2)
         {
-            throw new ArgumentException("Invalid amount of Transaction Entries: amount must be more than 1");
+            throw new EntriesAmountException();
         }
 
         if (!Enum.GetValues<TransactionState>().Contains(param.State))
@@ -137,14 +138,14 @@ public class TransactionService : ITransactionService
         {
             if (entryParam.Rate <= 0)
             {
-                throw new ArgumentException("Currency rate must be more than 0");
+                throw new InvalidCurrencyRateException(entryParam.Rate);
             }
 
             Account account = await Getter.GetEntityById(g => accountRepository.GetById(g), entryParam.AccountId);
 
             if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {
-                throw new ArgumentException("Rate for main Currency must be 1");
+                throw new InvalidCurrencyRateException(entryParam.Rate);
             }
 
             TransactionEntry addedEntry = new TransactionEntry

@@ -11,7 +11,7 @@ public static class Guard
     {
         if (entity == null) 
         {
-            throw new MissingInputParameterException(typeof(T));
+            throw new NullParameterException(typeof(T));
         }
     }
 
@@ -19,7 +19,7 @@ public static class Guard
     {
         if (entity.Name == null)
         {
-            throw new MissingNameException(typeof(T));
+            throw new NullNameException(typeof(T));
         }
     }
 
