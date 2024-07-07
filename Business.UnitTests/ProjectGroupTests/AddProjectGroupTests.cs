@@ -162,6 +162,6 @@ public class AddProjectGroupTests
             IsFavorite = true,
             ParentId = parent.Id
         };
-        Assert.ThrowsAsync<ArgumentException>(async () => await _service.Add(param));
+        Assert.ThrowsAsync<DuplicationNameException>(async () => await _service.Add(param));
     }
 }

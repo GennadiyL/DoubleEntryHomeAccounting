@@ -240,6 +240,6 @@ public class UpdateCategoryGroupTests
             IsFavorite = true,
             ParentId = parent.Id
         };
-        Assert.ThrowsAsync<ArgumentException>(async () => await _service.Update(child1.Id, param));
+        Assert.ThrowsAsync<DuplicationNameException>(async () => await _service.Update(child1.Id, param));
     }
 }

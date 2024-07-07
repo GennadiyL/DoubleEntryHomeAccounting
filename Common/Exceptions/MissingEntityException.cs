@@ -6,14 +6,14 @@
         public string TypeName { get; }
         public Guid Id { get; }
 
-        public MissingEntityException(string typeName, Guid id) : this(typeName, id, null)
+        public MissingEntityException(Type entityType, Guid id) : this(entityType, id, null)
         {
         }
 
-        public MissingEntityException(string typeName, Guid id, Exception innerException) 
-            : base(string.Format(InnerMessage, typeName, id), innerException)
+        public MissingEntityException(Type entityType, Guid id, Exception innerException) 
+            : base(string.Format(InnerMessage, entityType.Name, id), innerException)
         {
-            TypeName = typeName;
+            TypeName = entityType.Name;
             Id = id;
         }
     }
