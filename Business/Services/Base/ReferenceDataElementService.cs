@@ -34,6 +34,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
 
         TElement addedEntity = new TElement
         {
+            Id = Guid.NewGuid(),
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,

@@ -30,7 +30,8 @@ public class TemplateService : ITemplateService
 
         TemplateGroup group = await Getter.GetEntityById(g => templateGroupRepository.GetById(g), param.GroupId);
         await Guard.CheckElementWithSameName(templateRepository, group.Id, Guid.Empty, param.Name);
-        
+
+        addedEntity.Id = Guid.NewGuid();
         addedEntity.Name = param.Name;
         addedEntity.Description = param.Description;
         addedEntity.IsFavorite = param.IsFavorite;

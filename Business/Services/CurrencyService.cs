@@ -31,6 +31,7 @@ public class CurrencyService : ICurrencyService
 
         Currency addedCurrency = new Currency
         {
+            Id = Guid.NewGuid(),
             IsoCode = currencyData.Code,
             Symbol = symbol,
             Name = name,

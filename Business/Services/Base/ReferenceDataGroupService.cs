@@ -32,6 +32,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
 
         TGroup addedEntity = new TGroup
         {
+            Id = Guid.NewGuid(),
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,

@@ -34,6 +34,7 @@ public class AccountService : IAccountService
 
         Account addedEntity = new Account
         {
+            Id = Guid.NewGuid(),
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,

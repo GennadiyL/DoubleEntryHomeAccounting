@@ -1,6 +1,10 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services
 {
@@ -8,27 +12,82 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services
     {
         private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-        public CurrencyRateService(IUnitOfWorkFactory unitOfWorkFactory)
+        public CurrencyRateService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
+
+        public async Task<Guid> AddOrUpdate(CurrencyRateParam param)
         {
-            _unitOfWorkFactory = unitOfWorkFactory;
+            using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+            ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
+            ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
+
+            Guard.CheckParamForNull(param);
+            CheckParamRate(param);
+            await CheckParamDate(param, systemConfigRepository);
+
+            CurrencyRate currencyRate = await Getter.GetEntityById(
+                    g => currencyRateRepository.GetRateOnDate(g, DateOnly.FromDateTime(DateTime.Today)), 
+                    param.CurrencyId);
+
+            if (currencyRate.Date == DateOnly.FromDateTime(DateTime.Today))
+            {
+                currencyRate.Comment = param.Comment;
+                currencyRate.Rate = param.Rate;
+                await currencyRateRepository.Update(currencyRate);
+            }
+            else
+            {
+                currencyRate = new CurrencyRate()
+                {
+                    Id = Guid.NewGuid(),
+                    Currency = currencyRate.Currency,
+                    Comment = param.Comment,
+                    Date = param.Date,
+                    Rate = param.Rate,
+                };
+                await currencyRateRepository.Add(currencyRate);
+            }
+
+            await unitOfWork.SaveChanges();
+
+            return currencyRate.Id;
         }
 
-        //TODO: Implementation
-        public Task<Guid> Add(CurrencyRateParam param)
+        public async Task Delete(Guid currencyId, DateOnly fromDate, DateOnly toDate)
         {
-            throw new NotImplementedException();
+            using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+            ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
+            ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
+
+            Currency currency = await Getter.GetEntityById(
+                    g => currencyRateRepository.GetRatesByPeriod(g, fromDate, toDate), currencyId);
+
+            DateOnly minDate = await systemConfigRepository.GetMinDate();
+
+            List<CurrencyRate> currencyRates = currency.Rates.Where(e => e.Date != minDate).ToList();
+
+            await currencyRateRepository.Delete(currencyRates.Select(e => e.Id).ToList());
+
+            await unitOfWork.SaveChanges();
         }
 
-        //TODO: Implementation
-        public Task Update(Guid entityId, CurrencyRateParam param)
+        private static void CheckParamRate(CurrencyRateParam param)
         {
-            throw new NotImplementedException();
+            if (param.Rate <= 0)
+            {
+                throw new InvalidCurrencyRateException(param.Rate);
+            }
         }
 
-        //TODO: Implementation
-        public Task Delete(Guid entityId)
+        private static async Task CheckParamDate(CurrencyRateParam param, ISystemConfigRepository systemConfigRepository)
         {
-            throw new NotImplementedException();
+            DateOnly minDate = await systemConfigRepository.GetMinDate();
+            DateOnly maxDate = await systemConfigRepository.GetMaxDate();
+            if (param.Date < minDate || param.Date > maxDate)
+            {
+                throw new DateTimeOutOfRangeException(minDate, maxDate, param.Date);
+            }
         }
     }
 }

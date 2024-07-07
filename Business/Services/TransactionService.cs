@@ -31,6 +31,7 @@ public class TransactionService : ITransactionService
         List<TransactionEntry> entries = await CreateEntries(systemConfigRepository, currencyRepository, accountRepository, param, addedEntity);
         decimal sumAmount = entries.Sum(e => e.Amount * e.Rate);
 
+        addedEntity.Id = Guid.NewGuid();
         addedEntity.Comment = param.Comment;
         addedEntity.DateTime = param.DateTime;
         addedEntity.State = sumAmount == 0 ? param.State : TransactionState.NoValid;
