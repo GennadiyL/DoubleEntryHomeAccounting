@@ -22,6 +22,7 @@ public static class Guard
             throw new NullNameException(typeof(T));
         }
     }
+
     public static void CheckEnumeration<T>(T param) where T : struct
     {
         if (!((T[])Enum.GetValues(typeof(T))).Contains(param))
@@ -29,7 +30,6 @@ public static class Guard
             throw new InvalidEnumerationException(typeof(T), param);
         }
     }
-
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
         where TGroup : class, IGroupEntity<TGroup, TElement>, INamedEntity
@@ -54,8 +54,7 @@ public static class Guard
     private static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
         where T : INamedEntity
     {
-        if (entities
-                .Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
+        if (entities.Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault(t => t.Id != id) != null)
         {
             throw new DuplicationNameException(typeof(T), name);

@@ -88,7 +88,7 @@ public class CurrencyService : ICurrencyService
 
         await currencyRepository.Delete(deletedCurrency.Id);
         ICollection<Currency> currencies = await currencyRepository.GetAll();
-        OrderingUtils.Reorder(currencies);
+        currencies.Reorder();
         await currencyRepository.Update(currencies);
 
         await unitOfWork.SaveChanges();
@@ -107,7 +107,7 @@ public class CurrencyService : ICurrencyService
         }
 
         ICollection<Currency> currencies = await currencyRepository.GetAll();
-        OrderingUtils.SetOrder(currencies, currency, order);
+        currencies.SetOrder(currency, order);
 
         await currencyRepository.Update(currencies);
 

@@ -5,7 +5,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
 public static class CurrencyDataUtils
 {
-    public static List<CurrencyData> GetAvailableCurrencyData()
+    public static List<CurrencyData> GetListOfAvailableCurrencyData()
     {
         List<CurrencyData> currencyData
             = GetRegionInfos()

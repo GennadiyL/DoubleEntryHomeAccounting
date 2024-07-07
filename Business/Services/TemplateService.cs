@@ -85,7 +85,7 @@ public class TemplateService : ITemplateService
         TemplateGroup group = await templateRepository.GetByGroupId(deletedEntity.GroupId);
 
         group.Elements.Remove(deletedEntity);
-        OrderingUtils.Reorder(group.Elements);
+        group.Elements.Reorder();
 
         await templateRepository.Delete(deletedEntity.Id);
         await templateRepository.Update(group.Elements);
@@ -106,7 +106,7 @@ public class TemplateService : ITemplateService
         }
 
         TemplateGroup group = await templateRepository.GetByGroupId(template.GroupId);
-        OrderingUtils.SetOrder(group.Elements, template, order);
+        group.Elements.SetOrder(template, order);
 
         await templateRepository.Update(group.Elements);
 
@@ -154,8 +154,8 @@ public class TemplateService : ITemplateService
         entity.Group = toGroup;
         toGroup.Elements.Add(entity);
 
-        OrderingUtils.Reorder(fromGroup.Elements);
-        OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
+        fromGroup.Elements.Reorder();
+        toGroup.Elements.SetOrder(entity, newOrder);
 
         await templateRepository.Update(toGroup.Elements);
         await templateRepository.Update(fromGroup.Elements);

@@ -6,20 +6,20 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Convertors
     {
         public const string DateTimeFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 
-        public static string ConvertToString(System.DateTime dateTime)
+        public static string ConvertToString(DateTime dateTime)
         {
             return dateTime.ToString(DateTimeFormat);
         }
 
         public static string ConvertToString()
         {
-            System.DateTime dateTime = System.DateTime.UtcNow;
+            DateTime dateTime = DateTime.UtcNow;
             return ConvertToString(dateTime);
         }
 
-        public static System.DateTime ConvertFromString(string stamp)
+        public static DateTime ConvertFromString(string stamp)
         {
-            return System.DateTime.ParseExact(stamp, DateTimeFormat, CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(stamp, DateTimeFormat, CultureInfo.InvariantCulture);
         }
     }
 }

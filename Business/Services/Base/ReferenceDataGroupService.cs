@@ -94,7 +94,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         {
             entities = await groupRepository.Where(e => e.Parent == null);
         }
-        OrderingUtils.Reorder(entities);
+        entities.Reorder();
 
         await groupRepository.Delete(deletedEntity.Id);
         await groupRepository.Update(entities);
@@ -125,7 +125,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
             entities = await groupRepository.Where(e => e.Parent == null);
         }
 
-        OrderingUtils.SetOrder(entities, entity, order);
+        entities.SetOrder(entity, order);
 
         await groupRepository.Update(entities);
 

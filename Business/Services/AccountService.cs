@@ -114,7 +114,7 @@ public class AccountService : IAccountService
         AccountGroup group = await accountRepository.GetByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
-        OrderingUtils.Reorder(group.Elements);
+        group.Elements.Reorder();
 
         await accountRepository.Delete(deletedEntity.Id);
         await accountRepository.Update(group.Elements);
@@ -135,7 +135,7 @@ public class AccountService : IAccountService
         }
 
         AccountGroup group = await accountRepository.GetByGroupId(entity.Group.Id);
-        OrderingUtils.SetOrder(group.Elements, entity, order);
+        group.Elements.SetOrder(entity, order);
 
         await accountRepository.Update(group.Elements);
 
@@ -183,8 +183,8 @@ public class AccountService : IAccountService
         entity.Group = toGroup;
         toGroup.Elements.Add(entity);
 
-        OrderingUtils.Reorder(fromGroup.Elements);
-        OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
+        fromGroup.Elements.Reorder();
+        toGroup.Elements.SetOrder(entity, newOrder);
 
         await accountRepository.Update(toGroup.Elements);
         await accountRepository.Update(fromGroup.Elements);
@@ -230,7 +230,7 @@ public class AccountService : IAccountService
 
         AccountGroup secondaryGroup = await accountRepository.GetByGroupId(secondaryAccount.GroupId);
         secondaryGroup.Elements.Remove(secondaryAccount);
-        OrderingUtils.Reorder(secondaryGroup.Elements);
+        secondaryGroup.Elements.Reorder();
 
         await templateRepository.Update(templates);
         await transactionRepository.Update(transactions);

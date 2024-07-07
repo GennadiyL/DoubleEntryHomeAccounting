@@ -91,7 +91,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         }
 
         group.Elements.Remove(deletedEntity);
-        OrderingUtils.Reorder(group.Elements);
+        group.Elements.Reorder();
 
         await elementRepository.Delete(deletedEntity.Id);
         await elementRepository.Update(group.Elements);
@@ -112,7 +112,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         }
 
         TGroup group = await elementRepository.GetByGroupId(entity.GroupId);
-        OrderingUtils.SetOrder(group.Elements, entity, order);
+        group.Elements.SetOrder(entity, order);
 
         await elementRepository.Update(group.Elements);
 
@@ -160,8 +160,8 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         entity.Group = toGroup;
         toGroup.Elements.Add(entity);
 
-        OrderingUtils.Reorder(fromGroup.Elements);
-        OrderingUtils.SetOrder(toGroup.Elements, entity, newOrder);
+        fromGroup.Elements.Reorder();
+        toGroup.Elements.SetOrder(entity, newOrder);
 
         await elementRepository.Update(toGroup.Elements);
         await elementRepository.Update(fromGroup.Elements);
@@ -193,7 +193,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
 
         TGroup group = await elementRepository.GetByGroupId(secondaryEntity.GroupId);
         group.Elements.Remove(secondaryEntity);
-        OrderingUtils.Reorder(group.Elements);
+        group.Elements.Reorder();
 
         await elementRepository.Delete(secondaryEntity.Id);
         await elementRepository.Update(group.Elements);
