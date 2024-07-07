@@ -105,21 +105,19 @@ public class TransactionService : ITransactionService
     private async Task CheckInputTransactionParam(ISystemConfigRepository systemConfigRepository, TransactionParam param)
     {
         Guard.CheckParamForNull(param);
+        Guard.CheckEnumeration(param.State);
 
-        if (DateOnly.FromDateTime(param.DateTime) < await systemConfigRepository.GetMinDate() ||
-            DateOnly.FromDateTime(param.DateTime) > await systemConfigRepository.GetMaxDate())
+        DateOnly minDate = await systemConfigRepository.GetMinDate();
+        DateOnly maxDate = await systemConfigRepository.GetMaxDate();
+        DateOnly currentDate = DateOnly.FromDateTime(param.DateTime);
+        if (currentDate < minDate || currentDate > maxDate)
         {
-            throw new ArgumentException("Data and Time out of ragne.");
+            throw new DateTimeOutOfRangeException(minDate, maxDate, param.DateTime);
         }
 
         if (param.Entries == null || param.Entries.Count < 2)
         {
             throw new EntriesAmountException();
-        }
-
-        if (!Enum.GetValues<TransactionState>().Contains(param.State))
-        {
-            throw new ArgumentException("Invalid transaction state");
         }
     }
 

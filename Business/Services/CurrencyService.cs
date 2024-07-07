@@ -23,7 +23,7 @@ public class CurrencyService : ICurrencyService
 
         Guard.CheckParamForNull(param);
         CheckIsoCodeString(param.Code);
-        ChechInitialRate(initialRate);
+        CheckInitialRate(initialRate);
 
         CurrencyData currencyData = CurrencyDataUtils.GetCurrencyData(param.Code);
         string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
@@ -139,7 +139,7 @@ public class CurrencyService : ICurrencyService
         }
     }
 
-    private static void ChechInitialRate(decimal initialRate)
+    private static void CheckInitialRate(decimal initialRate)
     {
         if (initialRate <= 0)
         {

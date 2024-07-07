@@ -150,21 +150,21 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         await unitOfWork.SaveChanges();
     }
 
+    //TODO: Implementation
     public Task MoveToAnotherParent(Guid groupId, Guid parentId)
     {
-        //TODO: Implementation
         throw new NotImplementedException();
     }
 
+    //TODO: Implementation
     public Task CombineChildren(Guid primaryId, Guid secondaryId)
     {
-        //TODO: Implementation
         throw new NotImplementedException();
     }
 
+    //TODO: Implementation
     public Task CombineElements(Guid primaryId, Guid secondaryId)
     {
-        //TODO: Implementation
         throw new NotImplementedException();
     }
 }

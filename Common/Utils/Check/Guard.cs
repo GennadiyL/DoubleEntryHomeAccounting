@@ -22,6 +22,14 @@ public static class Guard
             throw new NullNameException(typeof(T));
         }
     }
+    public static void CheckEnumeration<T>(T param) where T : struct
+    {
+        if (!((T[])Enum.GetValues(typeof(T))).Contains(param))
+        {
+            throw new InvalidEnumerationException(typeof(T), param);
+        }
+    }
+
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
         where TGroup : class, IGroupEntity<TGroup, TElement>, INamedEntity
