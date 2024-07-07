@@ -1,4 +1,5 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check
 {
@@ -7,8 +8,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check
         public static async Task<T> GetEntityById<T>(Func<Guid, Task<T>> func, Guid entityId) where T : IEntity
         {
             T item = await func(entityId)
-                     ?? throw new ArgumentNullException($"Entity {typeof(T).Name} does not exist");
-            return item;
+                    ?? throw new MissingEntityException(typeof(T).Name, entityId); return item;
         }
     }
 }

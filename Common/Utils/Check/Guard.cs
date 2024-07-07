@@ -11,7 +11,7 @@ public static class Guard
     {
         if (entity == null) 
         {
-            throw new ArgumentNullException($"{typeof(T).Name} cannot be a null");
+            throw new MissingInputParameterException(typeof(T).Name);
         }
     }
 
@@ -61,7 +61,7 @@ public static class Guard
         int count = await repository.GetCount(groupId);
         if (count > 0)
         {
-            throw new GroupContainsSubGroupsException(typeof(TGroup), count);
+            throw new GroupContainsElementException(typeof(TGroup), count);
         }
     }
 
@@ -72,8 +72,7 @@ public static class Guard
         int count = await repository.GetCount(groupId);
         if (count > 0)
         {
-            throw new GroupContainsElementException(typeof(TGroup), count);
+            throw new GroupContainsSubGroupsException(typeof(TGroup), count);
         }
     }
-
 }

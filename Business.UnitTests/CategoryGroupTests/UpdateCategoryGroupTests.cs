@@ -5,6 +5,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
 namespace Business.UnitTests.CategoryGroupTests;
 
@@ -155,7 +156,7 @@ public class UpdateCategoryGroupTests
     [Test]
     public void UpdateCategoryGroupCheckNullParamNegativeTest()
     {
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Update(Guid.NewGuid(), null));
+        Assert.ThrowsAsync<MissingInputParameterException>(async () => await _service.Update(Guid.NewGuid(), null));
     }
 
     [Test]
@@ -208,7 +209,7 @@ public class UpdateCategoryGroupTests
             ParentId = Guid.NewGuid(),
         };
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Update(Guid.NewGuid(), param));
+        Assert.ThrowsAsync<MissingEntityException>(async () => await _service.Update(Guid.NewGuid(), param));
     }
 
     [Test]

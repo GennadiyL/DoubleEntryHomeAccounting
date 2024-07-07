@@ -1,6 +1,7 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -103,9 +104,9 @@ public class AddProjectGroupTests
     }
 
     [Test]
-    public void AddProjectGroupCheckEntityNullNegativeTest()
+    public void AddProjectGroupCheckNullParamNegativeTest()
     {
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(null));
+        Assert.ThrowsAsync<MissingInputParameterException>(async () => await _service.Add(null));
     }
 
     [Test]
@@ -133,7 +134,7 @@ public class AddProjectGroupTests
             ParentId = Guid.NewGuid(),
         };
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(param));
+        Assert.ThrowsAsync<MissingEntityException>(async () => await _service.Add(param));
     }
 
     [Test]

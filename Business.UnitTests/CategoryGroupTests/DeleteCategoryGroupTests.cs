@@ -3,10 +3,9 @@ using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
-using NSubstitute;
-using System.Linq;
-using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+using NSubstitute;
+
 
 namespace Business.UnitTests.CategoryGroupTests;
 
@@ -101,7 +100,7 @@ public class DeleteCategoryGroupTests
 
         _groupRepository.GetById(entityIdGuid).Returns(entity);
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Delete(passedIdGuid));
+        Assert.ThrowsAsync<MissingEntityException>(async () => await _service.Delete(passedIdGuid));
     }
 
     [Test]
@@ -122,59 +121,29 @@ public class DeleteCategoryGroupTests
         _groupRepository.GetById(entity.Id).Returns(entity);
         _groupRepository.GetCount(entity.Id).Returns(entity.Children.Count);
 
+        Assert.ThrowsAsync<GroupContainsSubGroupsException>(async () => await _service.Delete(entity.Id));
+    }
+
+    [Test]
+    public void DeleteCategoryGroupWithExistedElementsNegativeTest()
+    {
+        CategoryGroup entity = new CategoryGroup
+        {
+            Name = "originalName",
+            Description = "originalDescription",
+            IsFavorite = true,
+            ParentId = default
+        };
+        Category child1 = new Category { Id = Guid.NewGuid(), Name = "firstName", GroupId = entity.Id, Order = 1 };
+        Category child2 = new Category { Id = Guid.NewGuid(), Name = "secondName", GroupId = entity.Id, Order = 2 };
+        entity.Elements.Add(child1);
+        entity.Elements.Add(child2);
+
+        _groupRepository.GetById(entity.Id).Returns(entity);
+        _elementRepository.GetCount(entity.Id).Returns(entity.Elements.Count);
+
         Assert.ThrowsAsync<GroupContainsElementException>(async () => await _service.Delete(entity.Id));
     }
 
-    //TODO: Deleted group has elements
     //TODO: Cannot find parent
-
-
-
-    //[Test]
-    //public void DeleteCategoryGroupCheckAndGetEntityByIdExceptionTest()
-    //{
-    //    var deletedEntity = new CategoryGroup();
-
-    //    var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
-    //    mockEntityDataAccess.Setup(eda => eda.Get(It.IsAny<Guid>())).Returns(() => null);
-    //    var service = new CategoryGroupService(CreateMockGlobalDataAccess(), mockEntityDataAccess.Object,
-    //        CreateMockChildEntityDataAccess());
-
-    //    Assert.ThrowsAsync<ArgumentNullException>(async () => await service.Delete(deletedEntity.Id));
-    //}
-
-    //[Test]
-    //public void DeleteCategoryGroupСheckExistedChildrenInTheGroupExceptionTest()
-    //{
-    //    var deletedEntity = new CategoryGroup();
-    //    var mockEntityDataAccess = new Mock<ICategoryGroupDataAccess>();
-    //    mockEntityDataAccess.Setup(eda => eda.Get(It.IsAny<Guid>())).Returns(() => deletedEntity);
-    //    var service = new CategoryGroupService(CreateMockGlobalDataAccess(), mockEntityDataAccess.Object,
-    //        CreateMockChildEntityDataAccessForException());
-
-    //    Assert.ThrowsAsync<ArgumentException>(async () => await service.Delete(deletedEntity.Id));
-    //}
-
-    //private IGlobalDataAccess CreateMockGlobalDataAccess()
-    //{
-    //    var mockGlobalDataAccess = new Mock<IGlobalDataAccess>();
-    //    mockGlobalDataAccess.Setup(gda => gda.Load());
-    //    mockGlobalDataAccess.Setup(gda => gda.Save());
-    //    mockGlobalDataAccess.Setup(gda => gda.Get(It.IsAny<Guid>())).Returns(() => null);
-    //    return mockGlobalDataAccess.Object;
-    //}
-
-    //private ICategoryDataAccess CreateMockChildEntityDataAccessForException()
-    //{
-    //    var mockChildEntityDataAccess = new Mock<ICategoryDataAccess>();
-    //    mockChildEntityDataAccess.Setup(cda => cda.GetCount(It.IsAny<Guid>())).Returns(() => 5);
-    //    return mockChildEntityDataAccess.Object;
-    //}
-
-    //private ICategoryDataAccess CreateMockChildEntityDataAccess()
-    //{
-    //    var mockChildEntityDataAccess = new Mock<ICategoryDataAccess>();
-    //    mockChildEntityDataAccess.Setup(cda => cda.GetCount(It.IsAny<Guid>())).Returns(() => 0);
-    //    return mockChildEntityDataAccess.Object;
-    //}
 }
