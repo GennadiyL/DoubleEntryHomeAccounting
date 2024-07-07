@@ -110,7 +110,7 @@ public class AddTemplateGroupTests
     }
 
     [Test]
-    public void AddTemplateGroupCheckEntityNameNullNegativeTest()
+    public void AddTemplateGroupCheckNullParamNameNegativeTest()
     {
         GroupParam param = new GroupParam
         {
@@ -118,7 +118,7 @@ public class AddTemplateGroupTests
             Description = "description",
             IsFavorite = true
         };
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Add(param));
+        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Add(param));
     }
 
     [Test]

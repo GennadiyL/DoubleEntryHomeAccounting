@@ -160,7 +160,7 @@ public class UpdateProjectGroupTests
     }
 
     [Test]
-    public void UpdateProjectGroupCheckNullNameNegativeTest()
+    public void UpdateProjectGroupCheckNullParamNameNegativeTest()
     {
         GroupParam param = new GroupParam
         {
@@ -168,7 +168,7 @@ public class UpdateProjectGroupTests
             Description = "description",
             IsFavorite = true
         };
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Update(Guid.NewGuid(), param));
+        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Update(Guid.NewGuid(), param));
     }
 
     [Test]
@@ -193,7 +193,7 @@ public class UpdateProjectGroupTests
             IsFavorite = true
         };
 
-        Assert.ThrowsAsync<ArgumentNullException>(async () => await _service.Update(passedIdGuid, param));
+        Assert.ThrowsAsync<MissingNameException>(async () => await _service.Update(passedIdGuid, param));
     }
 
     [Test]

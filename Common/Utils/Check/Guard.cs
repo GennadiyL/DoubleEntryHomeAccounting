@@ -19,7 +19,7 @@ public static class Guard
     {
         if (entity.Name == null)
         {
-            throw new ArgumentNullException($"In {typeof(T).Name} the Name cannot be a null");
+            throw new MissingNameException(typeof(T).Name);
         }
     }
 
