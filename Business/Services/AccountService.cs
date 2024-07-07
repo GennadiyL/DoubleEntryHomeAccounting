@@ -103,11 +103,11 @@ public class AccountService : IAccountService
         Account deletedEntity = await Getter.GetEntityById(g => accountRepository.GetById(g), entityId);
         if (await transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
-            throw new Exception("Account cannot be delete, it contains transaction.");
+            throw new ReferenceEntityException(typeof(Account), typeof(Transaction), deletedEntity.Id);
         }
         if (await templateRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
-            throw new Exception("Account cannot be delete, it contains template.");
+            throw new ReferenceEntityException(typeof(Account), typeof(Template), deletedEntity.Id);
         }
 
         AccountGroup group = await accountRepository.GetByGroupId(deletedEntity.Group.Id);

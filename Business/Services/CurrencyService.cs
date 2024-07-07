@@ -82,7 +82,7 @@ public class CurrencyService : ICurrencyService
 
         if ((await accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())
         {
-            throw new ArgumentException("This Currency can not be deleted because it is used in one or more Accounts");
+            throw new ReferenceEntityException(typeof(Currency), typeof(Account), deletedCurrency.Id);
         }
 
         await currencyRepository.Delete(deletedCurrency.Id);
