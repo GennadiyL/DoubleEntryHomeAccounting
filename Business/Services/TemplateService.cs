@@ -28,7 +28,7 @@ public class TemplateService : ITemplateService
         Template addedEntity = new Template();
         List<TemplateEntry> entries = await CreateEntries(accountRepository, param, addedEntity);
 
-        TemplateGroup group = await Getter.GetEntityById(g => templateGroupRepository.GetById(g), param.GroupId);
+        TemplateGroup group = await Getter.GetEntityById(templateGroupRepository.GetById, param.GroupId);
         await Guard.CheckElementWithSameName(templateRepository, group.Id, Guid.Empty, param.Name);
 
         addedEntity.Id = Guid.NewGuid();
@@ -99,7 +99,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
+        Template template = await Getter.GetEntityById(templateRepository.GetById, entityId);
         if (template.Order == order)
         {
             return;
@@ -119,7 +119,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
+        Template template = await Getter.GetEntityById(templateRepository.GetById, entityId);
         if (template.IsFavorite == isFavorite)
         {
             return;
@@ -138,7 +138,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template entity = await Getter.GetEntityById(g => templateRepository.GetById(g), entityId);
+        Template entity = await Getter.GetEntityById(templateRepository.GetById, entityId);
         TemplateGroup fromGroup = await templateRepository.GetByGroupId(entity.Group.Id);
         TemplateGroup toGroup = await templateRepository.GetByGroupId(groupId);
 
@@ -176,7 +176,7 @@ public class TemplateService : ITemplateService
             TemplateEntry templateEntry = new TemplateEntry
             {
                 Id = Guid.NewGuid(),
-                Account = await Getter.GetEntityById(g => accountRepository.GetById(g), entry.AccountId),
+                Account = await Getter.GetEntityById(accountRepository.GetById, entry.AccountId),
                 Amount = entry.Amount,
                 Template = template,
             };

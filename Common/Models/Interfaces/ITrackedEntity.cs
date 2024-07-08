@@ -2,5 +2,7 @@
 
 public interface ITrackedEntity : IEntity
 {
-    string TimeStamp { get; set; }
+    DateTime Original { get; set; }
+    DateTime Current { get; set; }
+    bool IsDeleted { get; set; }
 }

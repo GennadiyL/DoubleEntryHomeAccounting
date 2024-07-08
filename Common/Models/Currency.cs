@@ -5,7 +5,9 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 public class Currency : Entity, ITrackedEntity, IFavoriteEntity, IOrderedEntity
 {
-    public string TimeStamp { get; set; }
+    public DateTime Original { get; set; }
+    public DateTime Current { get; set; }
+    public bool IsDeleted { get; set; }
     public string IsoCode { get; set; }
     public string Symbol { get; set; }
     public string Name { get; set; }

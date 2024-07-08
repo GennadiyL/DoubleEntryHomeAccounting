@@ -6,13 +6,8 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 public interface IEntityRepository<T> : IEntityRepository
     where T : IEntity
 {
-    //Task<T> GetById(
-    //    Guid id, 
-    //    Include<T> include = null);
-
     Task<T> GetById(
-        Guid id,
-        Func<T, Include<T>> include = null);
+        Guid id);
 
     Task<T> FirstOrDefault(
         Func<T, bool> predicate = null,

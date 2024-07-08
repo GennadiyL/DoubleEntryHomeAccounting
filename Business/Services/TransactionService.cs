@@ -140,7 +140,7 @@ public class TransactionService : ITransactionService
                 throw new InvalidCurrencyRateException(entryParam.Rate);
             }
 
-            Account account = await Getter.GetEntityById(g => accountRepository.GetById(g), entryParam.AccountId);
+            Account account = await Getter.GetEntityById(accountRepository.GetById, entryParam.AccountId);
 
             if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {

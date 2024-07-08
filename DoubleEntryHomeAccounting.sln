@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{309CB460
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Business.UnitTests", "Business.UnitTests\Business.UnitTests.csproj", "{DC2D5107-EBB5-4B35-B83E-94B0C26CE73A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data.EntityFramework.SqLite", "Data.EntityFramework.SqLite\Data.EntityFramework.SqLite.csproj", "{8D2C0101-3A46-4238-9C5B-0B9A2C93CDB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{DC2D5107-EBB5-4B35-B83E-94B0C26CE73A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC2D5107-EBB5-4B35-B83E-94B0C26CE73A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC2D5107-EBB5-4B35-B83E-94B0C26CE73A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D2C0101-3A46-4238-9C5B-0B9A2C93CDB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D2C0101-3A46-4238-9C5B-0B9A2C93CDB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D2C0101-3A46-4238-9C5B-0B9A2C93CDB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D2C0101-3A46-4238-9C5B-0B9A2C93CDB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

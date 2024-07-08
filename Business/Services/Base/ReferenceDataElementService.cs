@@ -29,7 +29,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TGroup group = await Getter.GetEntityById(g => groupRepository.GetById(g), param.GroupId);
+        TGroup group = await Getter.GetEntityById(groupRepository.GetById, param.GroupId);
         await Guard.CheckElementWithSameName(elementRepository, group.Id, Guid.Empty, param.Name);
 
         TElement addedEntity = new TElement
@@ -60,7 +60,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TElement updatedEntity = await Getter.GetEntityById(g => elementRepository.GetById(g), entityId);
+        TElement updatedEntity = await Getter.GetEntityById(elementRepository.GetById, entityId);
         await Guard.CheckElementWithSameName(elementRepository, updatedEntity.GroupId, entityId, param.Name);
 
         updatedEntity.Name = param.Name;
@@ -79,7 +79,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        TElement deletedEntity = await Getter.GetEntityById(g => elementRepository.GetById(g), entityId);
+        TElement deletedEntity = await Getter.GetEntityById(elementRepository.GetById, entityId);
 
         TGroup group = await elementRepository.GetByGroupId(deletedEntity.GroupId);
 
@@ -105,7 +105,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
 
         IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
 
-        TElement entity = await Getter.GetEntityById(g => elementRepository.GetById(g), entityId);
+        TElement entity = await Getter.GetEntityById(elementRepository.GetById, entityId);
         if (entity.Order == order)
         {
             return;
@@ -125,7 +125,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
 
         IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
 
-        TElement entity = await Getter.GetEntityById(g => elementRepository.GetById(g), entityId);
+        TElement entity = await Getter.GetEntityById(elementRepository.GetById, entityId);
         if (entity.IsFavorite == isFavorite)
         {
             return;
@@ -144,7 +144,7 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
 
         IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
 
-        TElement entity = await Getter.GetEntityById(g => elementRepository.GetById(g), entityId);
+        TElement entity = await Getter.GetEntityById(elementRepository.GetById, entityId);
         TGroup fromGroup = await elementRepository.GetByGroupId(entity.GroupId);
         TGroup toGroup = await elementRepository.GetByGroupId(groupId);
 
@@ -176,8 +176,8 @@ public abstract class ReferenceDataElementService<TGroup, TElement, TParam> : IR
         IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        TElement primaryEntity = await Getter.GetEntityById(g => elementRepository.GetById(g), primaryId);
-        TElement secondaryEntity = await Getter.GetEntityById(g => elementRepository.GetById(g), secondaryId);
+        TElement primaryEntity = await Getter.GetEntityById(elementRepository.GetById, primaryId);
+        TElement secondaryEntity = await Getter.GetEntityById(elementRepository.GetById, secondaryId);
 
         if (primaryEntity.Id == secondaryEntity.Id)
         {

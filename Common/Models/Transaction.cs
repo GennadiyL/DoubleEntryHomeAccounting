@@ -6,7 +6,9 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 public class Transaction : Entity, ITrackedEntity
 {
-    public string TimeStamp { get; set; }
+    public DateTime Original { get; set; }
+    public DateTime Current { get; set; }
+    public bool IsDeleted { get; set; }
     public DateTime DateTime { get; set; }
     public TransactionState State { get; set; }
     public string Comment { get; set; }
