@@ -6,8 +6,9 @@ public interface IElementRepository<TGroup, TElement>
     where TGroup : class, IGroupEntity<TGroup, TElement>
     where TElement : class, IElementEntity<TGroup, TElement>
 {
-    Task<ICollection<TElement>> GetByName(string name);
-    Task<TGroup> GetByGroupId(Guid groupId);
+    Task<ICollection<TElement>> GetElementsByName(string name);
+    Task<ICollection<TElement>> GetElementsByGroupId(Guid groupId);
+    Task<TGroup> GetGroupByGroupId(Guid groupId);
     Task<int> GetMaxOrder(Guid groupId);
     Task<int> GetCount(Guid groupId);
 }

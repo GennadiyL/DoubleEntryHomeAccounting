@@ -29,7 +29,7 @@ public class AccountService : IAccountService
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        AccountGroup group = await Getter.GetEntityById(accountGroupRepository.GetById, param.GroupId);
+        AccountGroup group = await Guard.CheckAndGetEntityById(accountGroupRepository.GetById, param.GroupId);
         await Guard.CheckElementWithSameName(accountRepository, group.Id, Guid.Empty, param.Name);
 
         Account addedEntity = new Account
@@ -39,13 +39,13 @@ public class AccountService : IAccountService
             Description = param.Description,
             IsFavorite = param.IsFavorite,
             Order = await accountRepository.GetMaxOrder(group.Id) + 1,
-            Currency = await Getter.GetEntityById(currencyRepository.GetById, param.CurrencyId),
+            Currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId),
             Category = param.CategoryId == default ? default 
-                : await Getter.GetEntityById(categoryRepository.GetById, param.CategoryId.Value),
+                : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
             Project = param.ProjectId == default ? default 
-                : await Getter.GetEntityById(projectRepository.GetById, param.ProjectId.Value),
+                : await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value),
             Correspondent = param.CorrespondentId == default ? default 
-                : await Getter.GetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
+                : await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
         };
 
         addedEntity.Group = group;
@@ -70,15 +70,15 @@ public class AccountService : IAccountService
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        Account updatedEntity = await Getter.GetEntityById(accountRepository.GetById, entityId);
+        Account updatedEntity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         await Guard.CheckElementWithSameName(accountRepository, updatedEntity.GroupId, entityId, param.Name);
 
         Category category = param.CategoryId == default ? default 
-            : await Getter.GetEntityById(categoryRepository.GetById, param.CategoryId.Value);
+            : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value);
         Project project = param.ProjectId == default ? default 
-            : await Getter.GetEntityById(projectRepository.GetById, param.ProjectId.Value);
+            : await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value);
         Correspondent correspondent = param.CorrespondentId == default ? default 
-            : await Getter.GetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value);
+            : await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
@@ -101,7 +101,7 @@ public class AccountService : IAccountService
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Account deletedEntity = await Getter.GetEntityById(accountRepository.GetById, entityId);
+        Account deletedEntity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         if (await transactionRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new ReferenceEntityException(typeof(Account), typeof(Transaction), deletedEntity.Id);
@@ -111,7 +111,7 @@ public class AccountService : IAccountService
             throw new ReferenceEntityException(typeof(Account), typeof(Template), deletedEntity.Id);
         }
 
-        AccountGroup group = await accountRepository.GetByGroupId(deletedEntity.Group.Id);
+        AccountGroup group = await accountRepository.GetGroupByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
         group.Elements.Reorder();
@@ -128,13 +128,13 @@ public class AccountService : IAccountService
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        Account entity = await Getter.GetEntityById(accountRepository.GetById, entityId);
+        Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         if (entity.Order == order)
         {
             return;
         }
 
-        AccountGroup group = await accountRepository.GetByGroupId(entity.GroupId);
+        AccountGroup group = await accountRepository.GetGroupByGroupId(entity.GroupId);
         group.Elements.SetOrder(entity, order);
 
         await accountRepository.Update(group.Elements);
@@ -148,7 +148,7 @@ public class AccountService : IAccountService
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        Account entity = await Getter.GetEntityById(accountRepository.GetById, entityId);
+        Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         if (entity.IsFavorite == isFavorite)
         {
             return;
@@ -167,9 +167,9 @@ public class AccountService : IAccountService
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        Account entity = await Getter.GetEntityById(accountRepository.GetById, entityId);
-        AccountGroup fromGroup = await accountRepository.GetByGroupId(entity.Group.Id);
-        AccountGroup toGroup = await accountRepository.GetByGroupId(groupId);   
+        Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
+        AccountGroup fromGroup = await accountRepository.GetGroupByGroupId(entity.Group.Id);
+        AccountGroup toGroup = await accountRepository.GetGroupByGroupId(groupId);   
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -200,8 +200,8 @@ public class AccountService : IAccountService
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Account primaryAccount = await Getter.GetEntityById(accountRepository.GetById, primaryId);
-        Account secondaryAccount = await Getter.GetEntityById(accountRepository.GetById, secondaryId);
+        Account primaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, primaryId);
+        Account secondaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, secondaryId);
 
         if (primaryAccount.Id == secondaryAccount.Id)
         {
@@ -228,7 +228,7 @@ public class AccountService : IAccountService
             transactionEntry.Account = primaryAccount;
         }
 
-        AccountGroup secondaryGroup = await accountRepository.GetByGroupId(secondaryAccount.GroupId);
+        AccountGroup secondaryGroup = await accountRepository.GetGroupByGroupId(secondaryAccount.GroupId);
         secondaryGroup.Elements.Remove(secondaryAccount);
         secondaryGroup.Elements.Reorder();
 

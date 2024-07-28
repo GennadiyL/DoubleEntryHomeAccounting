@@ -35,23 +35,19 @@ public static class Guard
         where TGroup : class, IGroupEntity<TGroup, TElement>, INamedEntity
         where TElement : class, IElementEntity<TGroup, TElement>
     {
-        TGroup group = await repository.GetByParentId(parentId);
-        if (group == null)
-        {
-            return;
-        }
-        CheckEntityWithSameName(group.Children, id, name);
+        ICollection<TGroup> children = await repository.GetChildrenByParentId(parentId);
+        CheckEntityWithSameName(children, id, name);
     }
 
     public static async Task CheckElementWithSameName<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
         where TGroup : class, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement>, INamedEntity
     {
-        TGroup group = await repository.GetByGroupId(groupId);
-        CheckEntityWithSameName(group.Elements, id, name);
+        ICollection<TElement> elements = await repository.GetElementsByGroupId(groupId);
+        CheckEntityWithSameName(elements, id, name);
     }
 
-    private static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
+    public static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
         where T : INamedEntity
     {
         if (entities.Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
@@ -81,5 +77,12 @@ public static class Guard
         {
             throw new GroupContainsSubGroupsException(typeof(TGroup), count);
         }
+    }
+
+    public static async Task<T> CheckAndGetEntityById<T>(Func<Guid, Task<T>> func, Guid entityId) where T : IEntity
+    {
+        T item = await func(entityId)
+                 ?? throw new MissingEntityException(typeof(T), entityId); 
+        return item;
     }
 }

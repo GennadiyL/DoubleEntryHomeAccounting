@@ -57,7 +57,7 @@ public class DeleteCategoryGroupTests
         parent.Children.Add(child2);
 
         _groupRepository.GetById(child1.Id).Returns(child1);
-        _groupRepository.GetByParentId(child1.ParentId).Returns(parent);
+        _groupRepository.GetParentByParentId(child1.ParentId).Returns(parent);
         await _groupRepository.Delete(Arg.Do<Guid>(e => deletedId = e));
 
         await _service.Delete(child1.Id);

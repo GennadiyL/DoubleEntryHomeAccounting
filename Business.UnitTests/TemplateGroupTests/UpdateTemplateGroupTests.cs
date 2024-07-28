@@ -62,7 +62,7 @@ public class UpdateTemplateGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetByParentId(entity.ParentId).Returns(parent);
+        _groupRepository.GetParentByParentId(entity.ParentId).Returns(parent);
 
         GroupParam param = new GroupParam
         {
@@ -95,7 +95,7 @@ public class UpdateTemplateGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetByParentId(default).Returns((TemplateGroup)null);
+        _groupRepository.GetParentByParentId(default).Returns((TemplateGroup)null);
 
         GroupParam param = new GroupParam
         {
@@ -137,7 +137,7 @@ public class UpdateTemplateGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetByParentId(entity.ParentId).Returns(parent);
+        _groupRepository.GetParentByParentId(entity.ParentId).Returns(parent);
 
         GroupParam param = new GroupParam
         {
@@ -231,7 +231,7 @@ public class UpdateTemplateGroupTests
 
         _groupRepository.GetById(child1.Id).Returns(child1);
         _groupRepository.GetById(child2.Id).Returns(child2);
-        _groupRepository.GetByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
 
         var param = new GroupParam
         {

@@ -50,7 +50,7 @@ public class AddAccountGroupTests
         AccountGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
         _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<AccountGroup>(p => entity = p));
 
@@ -81,7 +81,7 @@ public class AddAccountGroupTests
     {
         AccountGroup entity = null;
 
-        _groupRepository.GetByParentId(default).Returns((AccountGroup)null);
+        _groupRepository.GetParentByParentId(default).Returns((AccountGroup)null);
         _groupRepository.GetMaxOrder(default).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<AccountGroup>(p => entity = p));
 
@@ -153,7 +153,7 @@ public class AddAccountGroupTests
         parent.Children.Add(new AccountGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
 
         var param = new GroupParam()
         {

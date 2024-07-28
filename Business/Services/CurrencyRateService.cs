@@ -25,7 +25,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services
             CheckParamRate(param);
             await CheckParamDate(param, systemConfigRepository);
 
-            CurrencyRate currencyRate = await Getter.GetEntityById(
+            CurrencyRate currencyRate = await Guard.CheckAndGetEntityById(
                     g => currencyRateRepository.GetRateOnDate(g, DateOnly.FromDateTime(DateTime.Today)), 
                     param.CurrencyId);
 
@@ -60,7 +60,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services
             ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
             ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
 
-            Currency currency = await Getter.GetEntityById(
+            Currency currency = await Guard.CheckAndGetEntityById(
                     g => currencyRateRepository.GetRatesByPeriod(g, fromDate, toDate), currencyId);
 
             DateOnly minDate = await systemConfigRepository.GetMinDate();

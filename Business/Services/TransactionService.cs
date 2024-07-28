@@ -55,7 +55,7 @@ public class TransactionService : ITransactionService
 
         await CheckInputTransactionParam(systemConfigRepository, param);
 
-        Transaction updatedEntity = await Getter.GetEntityById(transactionRepository.GetTransactionById, entityId);
+        Transaction updatedEntity = await Guard.CheckAndGetEntityById(transactionRepository.GetTransactionById, entityId);
 
         List<TransactionEntry> oldEntries = updatedEntity.Entries;
         List<TransactionEntry> newEntries = await CreateEntries(systemConfigRepository, currencyRepository, accountRepository, param, updatedEntity);
@@ -79,7 +79,7 @@ public class TransactionService : ITransactionService
 
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Transaction deletedTransaction = await Getter.GetEntityById(transactionRepository.GetTransactionById, entityId); 
+        Transaction deletedTransaction = await Guard.CheckAndGetEntityById(transactionRepository.GetTransactionById, entityId); 
         await transactionRepository.Delete(deletedTransaction.Id);
     }
 
@@ -94,7 +94,7 @@ public class TransactionService : ITransactionService
         List<Transaction> deletedTransactions = new List<Transaction>();
         foreach (Guid transactionId in transactionIds)
         {
-            Transaction deletedTransaction = await Getter.GetEntityById(transactionRepository.GetTransactionById, transactionId);
+            Transaction deletedTransaction = await Guard.CheckAndGetEntityById(transactionRepository.GetTransactionById, transactionId);
             deletedTransactions.Add(deletedTransaction);
         }
 
@@ -140,7 +140,7 @@ public class TransactionService : ITransactionService
                 throw new InvalidCurrencyRateException(entryParam.Rate);
             }
 
-            Account account = await Getter.GetEntityById(accountRepository.GetById, entryParam.AccountId);
+            Account account = await Guard.CheckAndGetEntityById(accountRepository.GetById, entryParam.AccountId);
 
             if (account.CurrencyId == mainCurrency.Id && entryParam.Rate != 1)
             {

@@ -100,7 +100,7 @@ public class CurrencyService : ICurrencyService
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
-        Currency currency = await Getter.GetEntityById(currencyRepository.GetById, entityId);
+        Currency currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, entityId);
         if (currency.Order == order)
         {
             return;
@@ -120,7 +120,7 @@ public class CurrencyService : ICurrencyService
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
-        Currency currency = await Getter.GetEntityById(currencyRepository.GetById, entityId);
+        Currency currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, entityId);
         if (currency.IsFavorite == isFavorite)
         {
             return;

@@ -41,4 +41,9 @@ public static class OrderingExtensions
             entities.Reorder();
         }
     }
+
+    public static int GetMaxOrder<T>(this ICollection<T> entities) where T : IOrderedEntity
+    {
+        return entities.Max(e => e.Order);
+    }
 }

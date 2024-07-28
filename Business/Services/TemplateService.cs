@@ -28,7 +28,7 @@ public class TemplateService : ITemplateService
         Template addedEntity = new Template();
         List<TemplateEntry> entries = await CreateEntries(accountRepository, param, addedEntity);
 
-        TemplateGroup group = await Getter.GetEntityById(templateGroupRepository.GetById, param.GroupId);
+        TemplateGroup group = await Guard.CheckAndGetEntityById(templateGroupRepository.GetById, param.GroupId);
         await Guard.CheckElementWithSameName(templateRepository, group.Id, Guid.Empty, param.Name);
 
         addedEntity.Id = Guid.NewGuid();
@@ -56,7 +56,7 @@ public class TemplateService : ITemplateService
 
         CheckInputTemplateParam(param);
 
-        Template updatedEntity = await Getter.GetEntityById(templateRepository.GetTemplateById, entityId);
+        Template updatedEntity = await Guard.CheckAndGetEntityById(templateRepository.GetTemplateById, entityId);
         await Guard.CheckElementWithSameName(templateRepository, updatedEntity.GroupId, entityId, param.Name);
 
         List<TemplateEntry> oldEntries = updatedEntity.Entries;
@@ -80,9 +80,9 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template deletedEntity = await Getter.GetEntityById(templateRepository.GetTemplateById, entityId); 
+        Template deletedEntity = await Guard.CheckAndGetEntityById(templateRepository.GetTemplateById, entityId); 
 
-        TemplateGroup group = await templateRepository.GetByGroupId(deletedEntity.GroupId);
+        TemplateGroup group = await templateRepository.GetGroupByGroupId(deletedEntity.GroupId);
 
         group.Elements.Remove(deletedEntity);
         group.Elements.Reorder();
@@ -99,13 +99,13 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(templateRepository.GetById, entityId);
+        Template template = await Guard.CheckAndGetEntityById(templateRepository.GetById, entityId);
         if (template.Order == order)
         {
             return;
         }
 
-        TemplateGroup group = await templateRepository.GetByGroupId(template.GroupId);
+        TemplateGroup group = await templateRepository.GetGroupByGroupId(template.GroupId);
         group.Elements.SetOrder(template, order);
 
         await templateRepository.Update(group.Elements);
@@ -119,7 +119,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template template = await Getter.GetEntityById(templateRepository.GetById, entityId);
+        Template template = await Guard.CheckAndGetEntityById(templateRepository.GetById, entityId);
         if (template.IsFavorite == isFavorite)
         {
             return;
@@ -138,9 +138,9 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template entity = await Getter.GetEntityById(templateRepository.GetById, entityId);
-        TemplateGroup fromGroup = await templateRepository.GetByGroupId(entity.Group.Id);
-        TemplateGroup toGroup = await templateRepository.GetByGroupId(groupId);
+        Template entity = await Guard.CheckAndGetEntityById(templateRepository.GetById, entityId);
+        TemplateGroup fromGroup = await templateRepository.GetGroupByGroupId(entity.Group.Id);
+        TemplateGroup toGroup = await templateRepository.GetGroupByGroupId(groupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -176,7 +176,7 @@ public class TemplateService : ITemplateService
             TemplateEntry templateEntry = new TemplateEntry
             {
                 Id = Guid.NewGuid(),
-                Account = await Getter.GetEntityById(accountRepository.GetById, entry.AccountId),
+                Account = await Guard.CheckAndGetEntityById(accountRepository.GetById, entry.AccountId),
                 Amount = entry.Amount,
                 Template = template,
             };
