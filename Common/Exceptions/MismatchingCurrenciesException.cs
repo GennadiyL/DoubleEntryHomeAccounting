@@ -1,4 +1,6 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions.Base;
+
+namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
 public class MismatchingCurrenciesException : ApplicationBaseException
 {

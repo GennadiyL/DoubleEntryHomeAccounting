@@ -2,6 +2,6 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
-public class CorrespondentGroup : GroupReferenceEntity<CorrespondentGroup, Correspondent>
+public class CorrespondentGroup : GroupEntity<CorrespondentGroup, Correspondent>
 {
 }

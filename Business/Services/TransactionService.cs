@@ -1,6 +1,6 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Enums;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
@@ -17,7 +17,7 @@ public class TransactionService : ITransactionService
 
     public async Task<Guid> Add(TransactionParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
@@ -46,7 +46,7 @@ public class TransactionService : ITransactionService
 
     public async Task Update(Guid entityId, TransactionParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
@@ -75,7 +75,7 @@ public class TransactionService : ITransactionService
 
     public async Task Delete(Guid entityId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
@@ -85,7 +85,7 @@ public class TransactionService : ITransactionService
 
     public async Task DeleteTransactionList(List<Guid> transactionIds)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 

@@ -1,6 +1,6 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
@@ -17,7 +17,7 @@ public class TemplateService : ITemplateService
 
     public async Task<Guid> Add(TemplateParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
         ITemplateGroupRepository templateGroupRepository = unitOfWork.GetRepository<ITemplateGroupRepository>();
@@ -49,7 +49,7 @@ public class TemplateService : ITemplateService
 
     public async Task Update(Guid entityId, TemplateParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
@@ -76,7 +76,7 @@ public class TemplateService : ITemplateService
 
     public async Task Delete(Guid entityId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
@@ -95,7 +95,7 @@ public class TemplateService : ITemplateService
 
     public async Task SetOrder(Guid entityId, int order)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
@@ -115,7 +115,7 @@ public class TemplateService : ITemplateService
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
@@ -134,7 +134,7 @@ public class TemplateService : ITemplateService
 
     public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 

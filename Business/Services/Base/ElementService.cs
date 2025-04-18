@@ -1,6 +1,6 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
@@ -11,8 +11,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
 
 public abstract class ElementService<TGroup, TElement, TParam> : IElementService<TGroup, TElement, TParam>
-    where TGroup : class, IGroupReferenceEntity<TGroup, TElement>
-    where TElement : class, IElementReferenceEntity<TGroup, TElement>, IReferenceEntity, new()
+    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceEntity
+    where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity, new()
     where TParam : class, INamedParam, IFavoriteParam, IElementParam
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
@@ -21,12 +21,12 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task<Guid> Add(TParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
-
-        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
-
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
+
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
         TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, param.GroupId);
         ICollection<TElement> elements = group.Elements;
@@ -54,12 +54,12 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task Update(Guid entityId, TParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
-
-        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
-
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
+
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
         TElement updatedEntity = await Guard.CheckAndGetEntityById(elementRepository.GetById, entityId);
         ICollection<TElement> elements = await elementRepository.GetElementsByGroupId(updatedEntity.GroupId);
@@ -76,7 +76,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task Delete(Guid entityId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
@@ -102,7 +102,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task SetOrder(Guid entityId, int order)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
@@ -122,7 +122,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
@@ -141,7 +141,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
@@ -172,7 +172,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     public async Task CombineElements(Guid primaryId, Guid secondaryId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();

@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Infos;
 
-public class TemplateInfo : ElementReferenceInfo
+public class TemplateInfo : ElementInfo
 {
     public List<Guid> EntriesIds { get; } = new();
 }

@@ -2,6 +2,6 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Infos;
 
-public class ProjectGroupInfo : GroupReferenceInfo
+public class ProjectGroupInfo : GroupInfo
 {
 }

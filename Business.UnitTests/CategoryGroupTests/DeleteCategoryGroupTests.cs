@@ -1,7 +1,7 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using NSubstitute;
@@ -119,7 +119,7 @@ public class DeleteCategoryGroupTests
         entity.Children.Add(child2);
 
         _groupRepository.GetById(entity.Id).Returns(entity);
-        _groupRepository.GetCountInGroup(entity.Id).Returns(entity.Children.Count);
+        _groupRepository.GetCountInParent(entity.Id).Returns(entity.Children.Count);
 
         Assert.ThrowsAsync<GroupContainsSubGroupsException>(async () => await _service.Delete(entity.Id));
     }

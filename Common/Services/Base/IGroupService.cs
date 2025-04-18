@@ -4,8 +4,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 public interface IGroupService<TGroup, TElement, in TParam> : IReferenceService<TGroup, TParam>
-    where TGroup : class, IGroupReferenceEntity<TGroup, TElement>, IReferenceEntity
-    where TElement : class, IElementReferenceEntity<TGroup, TElement>
+    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceEntity
+    where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity
     where TParam : class, IParam
 {
     Task MoveToAnotherParent(Guid groupId, Guid parentId);

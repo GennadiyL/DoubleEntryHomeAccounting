@@ -2,6 +2,6 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
-public class AccountGroup : GroupReferenceEntity<AccountGroup, Account>
+public class AccountGroup : GroupEntity<AccountGroup, Account>
 {
 }

@@ -1,7 +1,7 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
@@ -16,7 +16,7 @@ internal class CurrencyRateService : ICurrencyRateService
 
     public async Task<Guid> AddOrUpdate(CurrencyRateParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
@@ -55,7 +55,7 @@ internal class CurrencyRateService : ICurrencyRateService
 
     public async Task Delete(Guid currencyId, DateOnly fromDate, DateOnly toDate)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();

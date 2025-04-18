@@ -1,5 +1,5 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
@@ -9,8 +9,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
 
 public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGroup, TElement, TParam>
-    where TGroup : class, IGroupReferenceEntity<TGroup, TElement>, IReferenceEntity, new()
-    where TElement : class, IElementReferenceEntity<TGroup, TElement>
+    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceEntity, new()
+    where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity
     where TParam : class, INamedParam, IFavoriteParam, IGroupParam
 
 {
@@ -20,18 +20,17 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task<Guid> Add(TParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
 
-        TGroup parent = null;
         ICollection<TGroup> children;
         if (param.ParentId.HasValue)
         {
-            parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, param.ParentId.Value);
+            var parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, param.ParentId.Value);
             children = parent.Children;
         }
         else
@@ -62,7 +61,7 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task Update(Guid entityId, TParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
@@ -84,7 +83,7 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task Delete(Guid entityId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
@@ -92,7 +91,7 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
         TGroup deletedEntity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
         ICollection<TGroup> children = await groupRepository.GetChildrenByParentId(deletedEntity.ParentId);
 
-        await Guard.CheckExistedChildrenInTheGroup(groupRepository, deletedEntity.Id);
+        await Guard.CheckExistedChildrenInTheParent(groupRepository, deletedEntity.Id);
         await Guard.CheckExistedElementsInTheGroup(elementRepository, deletedEntity.Id);
 
         children.Remove(deletedEntity);
@@ -106,7 +105,7 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task SetOrder(Guid entityId, int order)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
@@ -119,12 +118,12 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
         ICollection<TGroup> entities;
         if (entity.ParentId.HasValue)
         {
-            TGroup parent = await groupRepository.GetParentWithChildrenByParentId(entity.ParentId);
+            TGroup parent = await groupRepository.GetParentWithChildrenByParentId(entity.ParentId.Value);
             entities = parent.Children;
         }
         else
         {
-            entities = await groupRepository.Where(e => e.Parent == null);
+            entities = await groupRepository.GetChildrenByParentId(null);
         }
 
         entities.SetOrder(entity, order);
@@ -136,7 +135,7 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 

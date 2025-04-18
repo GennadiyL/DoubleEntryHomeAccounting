@@ -1,6 +1,6 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
@@ -17,7 +17,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task<Guid> Add(CurrencyParam param, decimal initialRate)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
@@ -48,7 +48,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task Update(CurrencyParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
@@ -68,7 +68,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task Delete(string isoCode)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
@@ -96,7 +96,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task SetOrder(Guid entityId, int order)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
@@ -116,7 +116,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 

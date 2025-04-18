@@ -1,6 +1,6 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services;
@@ -17,7 +17,7 @@ public class AccountService : IAccountService
 
     public async Task<Guid> Add(AccountParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountGroupRepository accountGroupRepository = unitOfWork.GetRepository<IAccountGroupRepository>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
@@ -63,7 +63,7 @@ public class AccountService : IAccountService
 
     public async Task Update(Guid entityId, AccountParam param)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
         ICategoryRepository categoryRepository = unitOfWork.GetRepository<ICategoryRepository>();
@@ -101,7 +101,7 @@ public class AccountService : IAccountService
 
     public async Task Delete(Guid entityId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
@@ -131,7 +131,7 @@ public class AccountService : IAccountService
 
     public async Task SetOrder(Guid entityId, int order)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
@@ -151,7 +151,7 @@ public class AccountService : IAccountService
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
@@ -170,7 +170,7 @@ public class AccountService : IAccountService
 
     public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
@@ -201,7 +201,7 @@ public class AccountService : IAccountService
 
     public async Task CombineElements(Guid primaryId, Guid secondaryId)
     {
-        using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();

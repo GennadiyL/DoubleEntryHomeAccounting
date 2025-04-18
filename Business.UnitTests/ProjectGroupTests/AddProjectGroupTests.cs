@@ -1,8 +1,8 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
-using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
@@ -51,7 +51,7 @@ public class AddProjectGroupTests
 
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
-        _groupRepository.GetMaxOrderInGroup(parent.Id).Returns(maxOrder);
+        _groupRepository.GetMaxOrderInParent(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<ProjectGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -82,7 +82,7 @@ public class AddProjectGroupTests
         ProjectGroup entity = null;
 
         _groupRepository.GetParentWithChildrenByParentId(default).Returns((ProjectGroup)null);
-        _groupRepository.GetMaxOrderInGroup(default).Returns(maxOrder);
+        _groupRepository.GetMaxOrderInParent(default).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<ProjectGroup>(p => entity = p));
 
         GroupParam param = new GroupParam

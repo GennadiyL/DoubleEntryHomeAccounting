@@ -2,6 +2,6 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
-public class ProjectGroup : GroupReferenceEntity<ProjectGroup, Project>
+public class ProjectGroup : GroupEntity<ProjectGroup, Project>
 {
 }
