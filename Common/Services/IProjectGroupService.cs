@@ -4,6 +4,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
-public interface IProjectGroupService : IReferenceDataGroupService<ProjectGroup, Project, GroupParam>
+public interface IProjectGroupService : IGroupService<ProjectGroup, Project, GroupParam>
 {
 }

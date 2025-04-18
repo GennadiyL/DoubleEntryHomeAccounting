@@ -3,7 +3,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 
-public interface ITemplateRepository : IElementEntityRepository<TemplateGroup, Template>
+public interface ITemplateRepository : IElementRepository<TemplateGroup, Template>
 {
     Task<Template> GetTemplateById(Guid id);
     Task<ICollection<TemplateEntry>> GetEntriesByAccountId(Guid accountId);

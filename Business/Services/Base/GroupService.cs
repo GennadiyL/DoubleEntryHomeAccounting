@@ -1,31 +1,28 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
-using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
-using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Ordering;
-using System.Xml.Linq;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services.Base;
 
-public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IReferenceDataGroupService<TGroup, TElement, TParam>
-    where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceDataEntity, new()
-    where TElement : class, IElementEntity<TGroup, TElement>
+public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGroup, TElement, TParam>
+    where TGroup : class, IGroupReferenceEntity<TGroup, TElement>, IReferenceEntity, new()
+    where TElement : class, IElementReferenceEntity<TGroup, TElement>
     where TParam : class, INamedParam, IFavoriteParam, IGroupParam
 
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
-    protected ReferenceDataGroupService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
+    protected GroupService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(TParam param)
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
@@ -34,14 +31,14 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         ICollection<TGroup> children;
         if (param.ParentId.HasValue)
         {
-            parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentByParentId, param.ParentId.Value);
+            parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, param.ParentId.Value);
             children = parent.Children;
         }
         else
         {
             children = await groupRepository.GetChildrenByParentId(default);
-            
         }
+
         Guard.CheckEntityWithSameName(children, Guid.Empty, param.Name);
 
         TGroup addedEntity = new TGroup
@@ -51,7 +48,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
             Description = param.Description,
             IsFavorite = param.IsFavorite,
             Order = children.GetMaxOrder() + 1,
-            Parent = parent
+            ParentId = param.ParentId
         };
 
         children.Add(addedEntity);
@@ -67,7 +64,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         Guard.CheckParamForNull(param);
         Guard.CheckParamNameForNull(param);
@@ -89,8 +86,8 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
-        IElementEntityRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementEntityRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
+        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
         TGroup deletedEntity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
         ICollection<TGroup> children = await groupRepository.GetChildrenByParentId(deletedEntity.ParentId);
@@ -111,7 +108,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         TGroup entity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
         if (entity.Order == order)
@@ -122,7 +119,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
         ICollection<TGroup> entities;
         if (entity.ParentId.HasValue)
         {
-            TGroup parent = await groupRepository.GetParentByParentId(entity.ParentId);
+            TGroup parent = await groupRepository.GetParentWithChildrenByParentId(entity.ParentId);
             entities = parent.Children;
         }
         else
@@ -141,7 +138,7 @@ public abstract class ReferenceDataGroupService<TGroup, TElement, TParam> : IRef
     {
         using IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-        IGroupEntityRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupEntityRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         TGroup entity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
         if (entity.IsFavorite == isFavorite)

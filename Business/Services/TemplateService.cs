@@ -35,7 +35,7 @@ public class TemplateService : ITemplateService
         addedEntity.Name = param.Name;
         addedEntity.Description = param.Description;
         addedEntity.IsFavorite = param.IsFavorite;
-        addedEntity.Order = await templateRepository.GetMaxOrder(group.Id) + 1;
+        addedEntity.Order = await templateRepository.GetMaxOrderInGroup(group.Id) + 1;
         addedEntity.Entries.AddRange(entries);
         addedEntity.Group = group;
         group.Elements.Add(addedEntity);
@@ -82,7 +82,7 @@ public class TemplateService : ITemplateService
 
         Template deletedEntity = await Guard.CheckAndGetEntityById(templateRepository.GetTemplateById, entityId); 
 
-        TemplateGroup group = await templateRepository.GetGroupByGroupId(deletedEntity.GroupId);
+        TemplateGroup group = await templateRepository.GetGroupWithElementsByGroupId(deletedEntity.GroupId);
 
         group.Elements.Remove(deletedEntity);
         group.Elements.Reorder();
@@ -105,7 +105,7 @@ public class TemplateService : ITemplateService
             return;
         }
 
-        TemplateGroup group = await templateRepository.GetGroupByGroupId(template.GroupId);
+        TemplateGroup group = await templateRepository.GetGroupWithElementsByGroupId(template.GroupId);
         group.Elements.SetOrder(template, order);
 
         await templateRepository.Update(group.Elements);
@@ -139,8 +139,8 @@ public class TemplateService : ITemplateService
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
         Template entity = await Guard.CheckAndGetEntityById(templateRepository.GetById, entityId);
-        TemplateGroup fromGroup = await templateRepository.GetGroupByGroupId(entity.Group.Id);
-        TemplateGroup toGroup = await templateRepository.GetGroupByGroupId(groupId);
+        TemplateGroup fromGroup = await templateRepository.GetGroupWithElementsByGroupId(entity.Group.Id);
+        TemplateGroup toGroup = await templateRepository.GetGroupWithElementsByGroupId(groupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -148,7 +148,7 @@ public class TemplateService : ITemplateService
         }
 
         await Guard.CheckElementWithSameName(templateRepository, toGroup.Id, entity.Id, entity.Name);
-        int newOrder = await templateRepository.GetMaxOrder(toGroup.Id) + 1;
+        int newOrder = await templateRepository.GetMaxOrderInGroup(toGroup.Id) + 1;
 
         fromGroup.Elements.Remove(entity);
         entity.Group = toGroup;

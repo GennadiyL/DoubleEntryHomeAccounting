@@ -3,8 +3,8 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
-public interface IReferenceDataService<T, in TParam> : IEntityService<T, TParam>, IOrderedService<T>, IFavoriteService<T>
-    where T : class, IReferenceDataEntity
+public interface IGeneralService<T, in TParam> : IEntityService<T, TParam>, IOrderedService<T>, IFavoriteService<T>
+    where T : class, IReferenceEntity
     where TParam : class, IParam
 {
 }

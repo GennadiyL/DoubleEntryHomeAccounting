@@ -38,7 +38,7 @@ public class AccountService : IAccountService
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order = await accountRepository.GetMaxOrder(group.Id) + 1,
+            Order = await accountRepository.GetMaxOrderInGroup(group.Id) + 1,
             Currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId),
             Category = param.CategoryId == default ? default 
                 : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
@@ -111,7 +111,7 @@ public class AccountService : IAccountService
             throw new ReferenceEntityException(typeof(Account), typeof(Template), deletedEntity.Id);
         }
 
-        AccountGroup group = await accountRepository.GetGroupByGroupId(deletedEntity.Group.Id);
+        AccountGroup group = await accountRepository.GetGroupWithElementsByGroupId(deletedEntity.Group.Id);
 
         group.Elements.Remove(deletedEntity);
         group.Elements.Reorder();
@@ -134,7 +134,7 @@ public class AccountService : IAccountService
             return;
         }
 
-        AccountGroup group = await accountRepository.GetGroupByGroupId(entity.GroupId);
+        AccountGroup group = await accountRepository.GetGroupWithElementsByGroupId(entity.GroupId);
         group.Elements.SetOrder(entity, order);
 
         await accountRepository.Update(group.Elements);
@@ -168,8 +168,8 @@ public class AccountService : IAccountService
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
         Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
-        AccountGroup fromGroup = await accountRepository.GetGroupByGroupId(entity.Group.Id);
-        AccountGroup toGroup = await accountRepository.GetGroupByGroupId(groupId);   
+        AccountGroup fromGroup = await accountRepository.GetGroupWithElementsByGroupId(entity.Group.Id);
+        AccountGroup toGroup = await accountRepository.GetGroupWithElementsByGroupId(groupId);   
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -177,7 +177,7 @@ public class AccountService : IAccountService
         }
 
         await Guard.CheckElementWithSameName(accountRepository, toGroup.Id, entity.Id, entity.Name);
-        int newOrder = await accountRepository.GetMaxOrder(toGroup.Id) + 1;
+        int newOrder = await accountRepository.GetMaxOrderInGroup(toGroup.Id) + 1;
 
         fromGroup.Elements.Remove(entity);
         entity.Group = toGroup;
@@ -228,7 +228,7 @@ public class AccountService : IAccountService
             transactionEntry.Account = primaryAccount;
         }
 
-        AccountGroup secondaryGroup = await accountRepository.GetGroupByGroupId(secondaryAccount.GroupId);
+        AccountGroup secondaryGroup = await accountRepository.GetGroupWithElementsByGroupId(secondaryAccount.GroupId);
         secondaryGroup.Elements.Remove(secondaryAccount);
         secondaryGroup.Elements.Reorder();
 

@@ -4,6 +4,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
-public interface ICorrespondentService : IReferenceDataElementService<CorrespondentGroup, Correspondent, ElementParam>
+public interface ICorrespondentService : IElementService<CorrespondentGroup, Correspondent, ElementParam>
 {
 }

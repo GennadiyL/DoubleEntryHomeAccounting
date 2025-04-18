@@ -8,24 +8,29 @@
         public DateOnly MaxDate { get; }
         public DateTime Current { get; }
 
-        public DateTimeOutOfRangeException(DateOnly minDate, DateOnly maxDate, DateTime current) 
+        public DateTimeOutOfRangeException(
+            DateOnly minDate, DateOnly maxDate, DateTime current) 
             : this(minDate, maxDate, current, null)
         {
         }
 
-        public DateTimeOutOfRangeException(DateOnly minDate, DateOnly maxDate, DateOnly current) 
+        public DateTimeOutOfRangeException(
+            DateOnly minDate, DateOnly maxDate, DateOnly current) 
             : this(minDate, maxDate, current, null)
         {
         }
 
-        public DateTimeOutOfRangeException(DateOnly minDate, DateOnly maxDate, DateTime current, Exception innerException) 
+        public DateTimeOutOfRangeException(
+            DateOnly minDate, DateOnly maxDate, DateTime current, Exception innerException) 
             : base(string.Format(InnerMessage, minDate, maxDate, current), innerException)
         {
             MinDate = minDate;
             MaxDate = maxDate;
             Current = current;
         }
-        public DateTimeOutOfRangeException(DateOnly minDate, DateOnly maxDate, DateOnly current, Exception innerException)
+        
+        public DateTimeOutOfRangeException(
+            DateOnly minDate, DateOnly maxDate, DateOnly current, Exception innerException)
             : base(string.Format(InnerMessage, minDate, maxDate, current), innerException)
         {
             MinDate = minDate;

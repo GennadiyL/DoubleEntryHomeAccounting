@@ -7,7 +7,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
 public class ProjectGroupService 
-    : ReferenceDataGroupService<ProjectGroup, Project, GroupParam>, IProjectGroupService
+    : GroupService<ProjectGroup, Project, GroupParam>, IProjectGroupService
 {
     public ProjectGroupService(IUnitOfWorkFactory unitOfWorkFactory) : base(unitOfWorkFactory)
     {

@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Base;
 
-public abstract class ReferenceDataEntity : Entity, IReferenceDataEntity
+public abstract class ReferenceEntity : Entity, IReferenceEntity
 {
     public DateTime Original { get; set; }
     public DateTime Current { get; set; }

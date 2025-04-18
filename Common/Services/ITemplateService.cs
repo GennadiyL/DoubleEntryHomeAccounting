@@ -4,6 +4,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
-public interface ITemplateService : IReferenceDataElementService<TemplateGroup, Template, TemplateParam>
+public interface ITemplateService : IElementService<TemplateGroup, Template, TemplateParam>
 {
 }

@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Infos.Base;
 
-public class ReferenceDataGroupInfo : ReferenceDataInfo, IReferenceDataGroupInfo
+public class GroupReferenceInfo : ReferenceInfo, IGroupReferenceInfo
 {
     public Guid? ParentId { get; set; }
     public List<Guid> ChildrenIds { get; } = new();

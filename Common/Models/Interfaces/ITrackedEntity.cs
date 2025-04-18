@@ -1,6 +1,6 @@
 ﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
-public interface ITrackedEntity : IEntity
+public interface ITrackedEntity
 {
     DateTime Original { get; set; }
     DateTime Current { get; set; }

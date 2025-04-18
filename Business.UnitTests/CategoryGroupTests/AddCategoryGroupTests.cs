@@ -23,7 +23,7 @@ public class AddCategoryGroupTests
         _groupRepository = Substitute.For<ICategoryGroupRepository>();
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup, Category>>().Returns(_groupRepository);
+        _unitOfWork.GetRepository<IGroupRepository<CategoryGroup, Category>>().Returns(_groupRepository);
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
@@ -50,8 +50,8 @@ public class AddCategoryGroupTests
         CategoryGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
-        _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
+        _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetMaxOrderInGroup(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -81,8 +81,8 @@ public class AddCategoryGroupTests
     {
         CategoryGroup entity = null;
 
-        _groupRepository.GetParentByParentId(default).Returns((CategoryGroup)null);
-        _groupRepository.GetMaxOrder(default).Returns(maxOrder);
+        _groupRepository.GetParentWithChildrenByParentId(default).Returns((CategoryGroup)null);
+        _groupRepository.GetMaxOrderInGroup(default).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -153,7 +153,7 @@ public class AddCategoryGroupTests
         parent.Children.Add(new CategoryGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
         var param = new GroupParam()
         {

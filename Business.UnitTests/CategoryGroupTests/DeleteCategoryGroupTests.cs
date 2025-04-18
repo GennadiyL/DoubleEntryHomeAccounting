@@ -25,8 +25,8 @@ public class DeleteCategoryGroupTests
         _elementRepository = Substitute.For<ICategoryRepository>();
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup, Category>>().Returns(_groupRepository);
-        _unitOfWork.GetRepository<IElementEntityRepository<CategoryGroup, Category>>().Returns(_elementRepository);
+        _unitOfWork.GetRepository<IGroupRepository<CategoryGroup, Category>>().Returns(_groupRepository);
+        _unitOfWork.GetRepository<IElementRepository<CategoryGroup, Category>>().Returns(_elementRepository);
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
@@ -57,7 +57,7 @@ public class DeleteCategoryGroupTests
         parent.Children.Add(child2);
 
         _groupRepository.GetById(child1.Id).Returns(child1);
-        _groupRepository.GetParentByParentId(child1.ParentId).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(child1.ParentId).Returns(parent);
         await _groupRepository.Delete(Arg.Do<Guid>(e => deletedId = e));
 
         await _service.Delete(child1.Id);
@@ -119,7 +119,7 @@ public class DeleteCategoryGroupTests
         entity.Children.Add(child2);
 
         _groupRepository.GetById(entity.Id).Returns(entity);
-        _groupRepository.GetCount(entity.Id).Returns(entity.Children.Count);
+        _groupRepository.GetCountInGroup(entity.Id).Returns(entity.Children.Count);
 
         Assert.ThrowsAsync<GroupContainsSubGroupsException>(async () => await _service.Delete(entity.Id));
     }
@@ -140,7 +140,7 @@ public class DeleteCategoryGroupTests
         entity.Elements.Add(child2);
 
         _groupRepository.GetById(entity.Id).Returns(entity);
-        _elementRepository.GetCount(entity.Id).Returns(entity.Elements.Count);
+        _elementRepository.GetCountInGroup(entity.Id).Returns(entity.Elements.Count);
 
         Assert.ThrowsAsync<GroupContainsElementException>(async () => await _service.Delete(entity.Id));
     }

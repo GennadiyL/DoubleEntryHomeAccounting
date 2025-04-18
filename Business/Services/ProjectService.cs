@@ -7,7 +7,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-public class ProjectService : ReferenceDataElementService<ProjectGroup, Project, ElementParam>, IProjectService
+public class ProjectService : ElementService<ProjectGroup, Project, ElementParam>, IProjectService
 {
     public ProjectService(IUnitOfWorkFactory unitOfWork) : base(unitOfWork)
     {

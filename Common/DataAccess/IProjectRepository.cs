@@ -3,6 +3,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 
-public interface IProjectRepository : IElementEntityRepository<ProjectGroup, Project>
+public interface IProjectRepository : IElementRepository<ProjectGroup, Project>
 {
 }

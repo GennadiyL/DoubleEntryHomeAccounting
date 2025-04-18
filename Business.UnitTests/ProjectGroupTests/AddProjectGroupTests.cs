@@ -23,7 +23,7 @@ public class AddProjectGroupTests
         _groupRepository = Substitute.For<IProjectGroupRepository>();
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _unitOfWork.GetRepository<IGroupEntityRepository<ProjectGroup, Project>>().Returns(_groupRepository);
+        _unitOfWork.GetRepository<IGroupRepository<ProjectGroup, Project>>().Returns(_groupRepository);
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
@@ -50,8 +50,8 @@ public class AddProjectGroupTests
         ProjectGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
-        _groupRepository.GetMaxOrder(parent.Id).Returns(maxOrder);
+        _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetMaxOrderInGroup(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<ProjectGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -81,8 +81,8 @@ public class AddProjectGroupTests
     {
         ProjectGroup entity = null;
 
-        _groupRepository.GetParentByParentId(default).Returns((ProjectGroup)null);
-        _groupRepository.GetMaxOrder(default).Returns(maxOrder);
+        _groupRepository.GetParentWithChildrenByParentId(default).Returns((ProjectGroup)null);
+        _groupRepository.GetMaxOrderInGroup(default).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<ProjectGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -153,7 +153,7 @@ public class AddProjectGroupTests
         parent.Children.Add(new ProjectGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);
-        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
         var param = new GroupParam()
         {

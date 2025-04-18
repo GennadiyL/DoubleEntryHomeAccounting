@@ -2,6 +2,6 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Models;
 
-public class TemplateGroup : ReferenceDataGroupEntity<TemplateGroup, Template>
+public class TemplateGroup : GroupReferenceEntity<TemplateGroup, Template>
 {
 }

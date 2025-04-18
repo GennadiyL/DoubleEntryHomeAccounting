@@ -1,6 +1,6 @@
 ﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
-public interface IFavoriteEntity : IEntity
+public interface IFavoriteEntity
 {
     bool IsFavorite { get; set; }
 }

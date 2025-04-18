@@ -23,7 +23,7 @@ public class UpdateCategoryGroupTests
         _groupRepository = Substitute.For<ICategoryGroupRepository>();
 
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _unitOfWork.GetRepository<IGroupEntityRepository<CategoryGroup, Category>>().Returns(_groupRepository);
+        _unitOfWork.GetRepository<IGroupRepository<CategoryGroup, Category>>().Returns(_groupRepository);
 
         _unitOfWorkFactory = Substitute.For<IUnitOfWorkFactory>();
         _unitOfWorkFactory.Create().Returns(_unitOfWork);
@@ -62,7 +62,7 @@ public class UpdateCategoryGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetParentByParentId(entity.ParentId).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(entity.ParentId).Returns(parent);
 
         GroupParam param = new GroupParam
         {
@@ -95,7 +95,7 @@ public class UpdateCategoryGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetParentByParentId(default).Returns((CategoryGroup)null);
+        _groupRepository.GetParentWithChildrenByParentId(default).Returns((CategoryGroup)null);
 
         GroupParam param = new GroupParam
         {
@@ -137,7 +137,7 @@ public class UpdateCategoryGroupTests
         };
 
         _groupRepository.GetById(id).Returns(entity);
-        _groupRepository.GetParentByParentId(entity.ParentId).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(entity.ParentId).Returns(parent);
 
         GroupParam param = new GroupParam
         {
@@ -231,7 +231,7 @@ public class UpdateCategoryGroupTests
 
         _groupRepository.GetById(child1.Id).Returns(child1);
         _groupRepository.GetById(child2.Id).Returns(child2);
-        _groupRepository.GetParentByParentId(parent.Id).Returns(parent);
+        _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
         var param = new GroupParam
         {

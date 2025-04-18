@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Infos.Base;
 
-public class ReferenceDataInfo : Info, IReferenceDataInfo
+public class ReferenceInfo : Info, IReferenceInfo
 {
     public string Name { get; set; }
     public string Description { get; set; }

@@ -32,23 +32,24 @@ public static class Guard
     }
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid? parentId, Guid id, string name)
-        where TGroup : class, IGroupEntity<TGroup, TElement>, INamedEntity
-        where TElement : class, IElementEntity<TGroup, TElement>
+        where TGroup : class, IEntity, INamedEntity, IGroupReferenceEntity<TGroup, TElement>
+        where TElement : class, IElementReferenceEntity<TGroup, TElement>
     {
         ICollection<TGroup> children = await repository.GetChildrenByParentId(parentId);
         CheckEntityWithSameName(children, id, name);
     }
 
-    public static async Task CheckElementWithSameName<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
-        where TGroup : class, IGroupEntity<TGroup, TElement>
-        where TElement : class, IElementEntity<TGroup, TElement>, INamedEntity
+    public static async Task CheckElementWithSameName<TGroup, TElement>(
+        IElementRepository<TGroup, TElement> repository, Guid groupId, Guid id, string name)
+        where TGroup : class, IGroupReferenceEntity<TGroup, TElement>
+        where TElement : class, IEntity, INamedEntity, IElementReferenceEntity<TGroup, TElement> 
     {
         ICollection<TElement> elements = await repository.GetElementsByGroupId(groupId);
         CheckEntityWithSameName(elements, id, name);
     }
 
     public static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
-        where T : INamedEntity
+        where T : IEntity, INamedEntity
     {
         if (entities.Where(e => string.Equals(e.Name, name, StringComparison.InvariantCultureIgnoreCase))
                 .FirstOrDefault(t => t.Id != id) != null)
@@ -57,22 +58,22 @@ public static class Guard
         }
     }
 
-    public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : class, IGroupEntity<TGroup, TElement>
-        where TElement : class, IElementEntity<TGroup, TElement>
+    public static async Task CheckExistedElementsInTheGroup<TGroup, TElement>(IElementRepository<TGroup, TElement> elementRepository, Guid groupId)
+        where TGroup : class, IGroupReferenceEntity<TGroup, TElement>
+        where TElement : class, IElementReferenceEntity<TGroup, TElement>
     {
-        int count = await repository.GetCount(groupId);
+        int count = await elementRepository.GetCountInGroup(groupId);
         if (count > 0)
         {
             throw new GroupContainsElementException(typeof(TGroup), count);
         }
     }
 
-    public static async Task CheckExistedChildrenInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> repository, Guid groupId)
-        where TGroup : class, IGroupEntity<TGroup, TElement>
-        where TElement : class, IElementEntity<TGroup, TElement>
+    public static async Task CheckExistedChildrenInTheGroup<TGroup, TElement>(IGroupRepository<TGroup, TElement> groupRepository, Guid groupId)
+        where TGroup : class, IGroupReferenceEntity<TGroup, TElement>
+        where TElement : class, IElementReferenceEntity<TGroup, TElement>
     {
-        int count = await repository.GetCount(groupId);
+        int count = await groupRepository.GetCountInGroup(groupId);
         if (count > 0)
         {
             throw new GroupContainsSubGroupsException(typeof(TGroup), count);

@@ -2,7 +2,7 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Infos;
 
-public class AccountInfo : ReferenceDataElementInfo
+public class AccountInfo : ElementReferenceInfo
 {
     public Guid CurrencyId { get; set; }
     public Guid? CorrespondentId { get; set; }
