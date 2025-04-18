@@ -1,8 +1,7 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+
+public interface IStoreManager
 {
-    public interface IStoreManager
-    {
-        Task RejectChanges();
-        Task SaveChanges();
-    }
+    Task RejectChanges();
+    Task SaveChanges();
 }

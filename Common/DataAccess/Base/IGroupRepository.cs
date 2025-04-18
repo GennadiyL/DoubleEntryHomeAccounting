@@ -9,6 +9,8 @@ public interface IGroupRepository<TGroup, TElement> : IEntityRepository<TGroup>
     Task<ICollection<TGroup>> GetByName(string name);
     [Obsolete("Use GetParentWithChildrenByParentId")]
     Task<ICollection<TGroup>> GetChildrenByParentId(Guid? parentId);
+    //TODO: REVIEW
+    //Rename to GetChildrenByParentId
     Task<TGroup> GetParentWithChildrenByParentId(Guid parentId);
     Task<int> GetMaxOrderInGroup(Guid? parentId);
     Task<int> GetCountInGroup(Guid? parentId);

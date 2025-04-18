@@ -1,13 +1,14 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions
-{
-    public abstract class ApplicationBaseException : Exception
-    {
-        protected ApplicationBaseException(string message) : base(message)
-        {
-        }
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
-        protected ApplicationBaseException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+//TODO: REVIEW
+//All Exceptions
+public abstract class ApplicationBaseException : Exception
+{
+    protected ApplicationBaseException(string message) : base(message)
+    {
+    }
+
+    protected ApplicationBaseException(string message, Exception innerException) : base(message, innerException)
+    {
     }
 }

@@ -40,11 +40,14 @@ public class AccountService : IAccountService
             IsFavorite = param.IsFavorite,
             Order = await accountRepository.GetMaxOrderInGroup(group.Id) + 1,
             Currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId),
-            Category = param.CategoryId == default ? default 
+            Category = param.CategoryId == default
+                ? default
                 : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
-            Project = param.ProjectId == default ? default 
+            Project = param.ProjectId == default
+                ? default
                 : await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value),
-            Correspondent = param.CorrespondentId == default ? default 
+            Correspondent = param.CorrespondentId == default
+                ? default
                 : await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
         };
 
@@ -73,11 +76,14 @@ public class AccountService : IAccountService
         Account updatedEntity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         await Guard.CheckElementWithSameName(accountRepository, updatedEntity.GroupId, entityId, param.Name);
 
-        Category category = param.CategoryId == default ? default 
+        Category category = param.CategoryId == default
+            ? default
             : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value);
-        Project project = param.ProjectId == default ? default 
+        Project project = param.ProjectId == default
+            ? default
             : await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value);
-        Correspondent correspondent = param.CorrespondentId == default ? default 
+        Correspondent correspondent = param.CorrespondentId == default
+            ? default
             : await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value);
 
         updatedEntity.Name = param.Name;
@@ -106,6 +112,7 @@ public class AccountService : IAccountService
         {
             throw new ReferenceEntityException(typeof(Account), typeof(Transaction), deletedEntity.Id);
         }
+
         if (await templateRepository.GetCountEntriesByAccountId(deletedEntity.Id) > 0)
         {
             throw new ReferenceEntityException(typeof(Account), typeof(Template), deletedEntity.Id);
@@ -169,7 +176,7 @@ public class AccountService : IAccountService
 
         Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         AccountGroup fromGroup = await accountRepository.GetGroupWithElementsByGroupId(entity.Group.Id);
-        AccountGroup toGroup = await accountRepository.GetGroupWithElementsByGroupId(groupId);   
+        AccountGroup toGroup = await accountRepository.GetGroupWithElementsByGroupId(groupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -207,6 +214,7 @@ public class AccountService : IAccountService
         {
             return;
         }
+
         if (primaryAccount.CurrencyId != secondaryAccount.CurrencyId)
         {
             throw new MismatchingCurrenciesException();

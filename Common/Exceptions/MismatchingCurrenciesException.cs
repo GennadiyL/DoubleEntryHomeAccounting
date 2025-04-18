@@ -1,15 +1,14 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
+
+public class MismatchingCurrenciesException : ApplicationBaseException
 {
-    public class MismatchingCurrenciesException : ApplicationBaseException
+    private const string _innerMessage = "Can't combine entities with different currencies";
+
+    public MismatchingCurrenciesException() : this(null)
     {
-        private const string InnerMessage = "Can't combine entities with different currencies";
+    }
 
-        public MismatchingCurrenciesException() : this(null)
-        {
-        }
-
-        public MismatchingCurrenciesException(Exception innerException) : base(InnerMessage, innerException)
-        {
-        }
+    public MismatchingCurrenciesException(Exception innerException) : base(_innerMessage, innerException)
+    {
     }
 }

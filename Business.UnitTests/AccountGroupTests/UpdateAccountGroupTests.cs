@@ -136,7 +136,7 @@ public class UpdateAccountGroupTests
             ParentId = parent.Id
         };
 
-        _groupRepository.GetById(id).Returns(entity);
+        _groupRepository.GetById(id).Returns(entity); 
         _groupRepository.GetParentWithChildrenByParentId(entity.ParentId).Returns(parent);
 
         GroupParam param = new GroupParam

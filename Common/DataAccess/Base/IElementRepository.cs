@@ -9,6 +9,8 @@ public interface IElementRepository<TGroup, TElement> : IEntityRepository<TEleme
     Task<ICollection<TElement>> GetByName(string name);
     [Obsolete("Use GetGroupWithElementsByGroupId instead")]
     Task<ICollection<TElement>> GetElementsByGroupId(Guid groupId);
+    //TODO: REVIEW
+    //Rename to GetElementsByGroupId
     Task<TGroup> GetGroupWithElementsByGroupId(Guid groupId);
     Task<int> GetMaxOrderInGroup(Guid groupId);
     Task<int> GetCountInGroup(Guid groupId);

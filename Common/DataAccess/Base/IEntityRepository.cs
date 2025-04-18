@@ -1,6 +1,5 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Base;
+
+public interface IEntityRepository
 {
-    public interface IEntityRepository
-    {
-    }
 }

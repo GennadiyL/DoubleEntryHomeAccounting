@@ -1,7 +1,6 @@
-﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Infrastructure.Peaa;
+
+public interface IUnitOfWorkFactory
 {
-    public interface IUnitOfWorkFactory
-    {
-        IUnitOfWork Create(bool isReadOnly = false);
-    }
+    IUnitOfWork Create(bool isReadOnly = false);
 }
