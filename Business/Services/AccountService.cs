@@ -17,6 +17,9 @@ public class AccountService : IAccountService
 
     public async Task<Guid> Add(AccountParam param)
     {
+        Guard.CheckParamForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
+
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IAccountGroupRepository accountGroupRepository = unitOfWork.GetRepository<IAccountGroupRepository>();
@@ -26,12 +29,21 @@ public class AccountService : IAccountService
         ICorrespondentRepository correspondentRepository = unitOfWork.GetRepository<ICorrespondentRepository>();
         IProjectRepository projectRepository = unitOfWork.GetRepository<IProjectRepository>();
 
-        Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNullOrEmpty(param);
-
         AccountGroup group = await Guard.CheckAndGetEntityById(accountGroupRepository.GetById, param.GroupId);
         
         await Guard.CheckElementWithSameName(accountRepository, group.Id, Guid.Empty, param.Name);
+
+        Currency currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId);
+
+        Category category = param.CategoryId == default ?
+            default :
+            await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value);
+        Correspondent correspondent = param.CorrespondentId == default ?
+            default :
+            await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value);
+        Project project = param.ProjectId == default ?
+            default :
+            await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value);
 
         Account addedEntity = new Account
         {
@@ -40,17 +52,16 @@ public class AccountService : IAccountService
             Description = param.Description,
             IsFavorite = param.IsFavorite,
             Order = await accountRepository.GetMaxOrderInGroup(group.Id) + 1,
-            Currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId),
-            Category = param.CategoryId == default ?
-                default :
-                await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
-            Project = param.ProjectId == default ?
-                default :
-                await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value),
-            Correspondent = param.CorrespondentId == default ?
-                default :
-                await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
-            Group = group
+            Currency = currency,
+            CurrencyId = currency.Id,
+            Category = category,
+            CategoryId = category?.Id,
+            Correspondent = correspondent,
+            CorrespondentId = correspondent?.Id,
+            Project = project,
+            ProjectId = project?.Id,
+            Group = group,
+            GroupId = group.Id,
         };
 
         addedEntity.Group = group;

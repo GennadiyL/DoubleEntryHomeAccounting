@@ -1,4 +1,5 @@
 ﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models;
+using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Models;
 
@@ -15,6 +16,15 @@ public class Roots
     public static CorrespondentGroup CorrespondentGroup { get; } = CreateCorrespondentGroup();
     public static ProjectGroup ProjectGroup { get; } = CreateProjectGroup();
     public static TemplateGroup TemplateGroup { get; } = CreateTemplateGroup();
+
+    private static HashSet<Guid> RootIds { get; } = new HashSet<Guid>()
+    {
+        AccountGroupId,
+        CategoryGroupId,
+        CorrespondentGroupId,
+        ProjectGroupId,
+        TemplateGroupId
+    };
 
     private static AccountGroup CreateAccountGroup()
     {
@@ -70,4 +80,9 @@ public class Roots
         group.Parent = group;
         return group;
     }
+
+    public static bool IsRoot<TGroup, TElement>(TGroup group)
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement> =>
+        RootIds.Contains(group.Id);
 }

@@ -2,6 +2,7 @@
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
+using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 
@@ -88,6 +89,38 @@ public static class Guard
         if (count > 0)
         {
             throw new GroupContainsElementException(typeof(TGroup), count);
+        }
+    }
+
+    public static async Task CheckCycle<TGroup, TElement>(
+        IGroupRepository<TGroup, TElement> groupRepository,
+        Guid parentId,
+        Guid childId)
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement>
+    {
+        TGroup checkGroup = await CheckAndGetEntityById(groupRepository.GetById, parentId);
+        while (checkGroup.Id != childId)
+        {
+            if (Roots.IsRoot<TGroup, TElement>(checkGroup))
+            {
+                return;
+            }
+
+            checkGroup = await groupRepository.GetById(checkGroup.ParentId);
+        }
+
+        throw new GroupCycleException(typeof(TGroup));
+    }
+
+
+    public static void CheckIsRool<TGroup, TElement>(TGroup group)
+        where TGroup : class, IGroupEntity<TGroup, TElement>
+        where TElement : class, IElementEntity<TGroup, TElement>
+    {
+        if (Roots.IsRoot<TGroup, TElement>(group))
+        {
+            throw new ReadonlyRootGroupException(typeof(TGroup));
         }
     }
 

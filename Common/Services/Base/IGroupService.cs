@@ -9,5 +9,5 @@ public interface IGroupService<TGroup, TElement, in TParam> : IReferenceService<
     where TParam : class, IParam
 {
     Task MoveToAnotherParent(Guid groupId, Guid toParentId);
-    Task CombineChildren(Guid toGroupId, Guid fromGroupId);
+    Task CombineGroups(Guid toGroupId, Guid fromGroupId);
 }

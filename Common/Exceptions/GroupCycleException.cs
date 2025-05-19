@@ -2,17 +2,17 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
-public class NullNameException : ApplicationBaseException
+public class GroupCycleException : ApplicationBaseException
 {
-    private const string _innerMessage = "Name {0} cannot be null.";
+    private const string _innerMessage = "Found Cycle in the Group {0}.";
     
     public string TypeName { get; }
     
-    public NullNameException(Type entityType) : this(entityType, null)
+    public  GroupCycleException(Type entityType) : this(entityType, null)
     {
     }
 
-    public NullNameException(Type entityType, Exception innerException) :
+    public GroupCycleException(Type entityType, Exception innerException) :
         base(string.Format(_innerMessage, entityType.Name), innerException)
     {
         TypeName = entityType.Name;

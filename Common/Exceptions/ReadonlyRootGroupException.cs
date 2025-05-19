@@ -2,17 +2,17 @@
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
-public class NullNameException : ApplicationBaseException
+public class ReadonlyRootGroupException : ApplicationBaseException
 {
-    private const string _innerMessage = "Name {0} cannot be null.";
+    private const string _innerMessage = "Root Group {0} must be readonly.";
     
     public string TypeName { get; }
     
-    public NullNameException(Type entityType) : this(entityType, null)
+    public  ReadonlyRootGroupException(Type entityType) : this(entityType, null)
     {
     }
 
-    public NullNameException(Type entityType, Exception innerException) :
+    public ReadonlyRootGroupException(Type entityType, Exception innerException) :
         base(string.Format(_innerMessage, entityType.Name), innerException)
     {
         TypeName = entityType.Name;
