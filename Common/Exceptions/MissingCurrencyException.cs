@@ -12,8 +12,8 @@ public class MissingCurrencyException : ApplicationBaseException
     {
     }
 
-    public MissingCurrencyException(string isoCode, Exception innerException) 
-        : base(string.Format(_innerMessage, isoCode), innerException)
+    public MissingCurrencyException(string isoCode, Exception innerException) :
+        base(string.Format(_innerMessage, isoCode), innerException)
     {
         IsoCode = isoCode;
     }

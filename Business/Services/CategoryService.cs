@@ -16,6 +16,10 @@ public class CategoryService : ElementService<CategoryGroup, Category, ElementPa
     protected override Func<IAccountRepository, Category, Task<ICollection<Account>>> GetAccountsByEntity =>
         async (accountRepository, category) => await accountRepository.GetByCategoryId(category.Id);
 
-    protected override Action<Category, Account> AccountEntitySetter =>
-        (category, account) => account.Category = category;
+    protected override Action<Category, Account> SetAccountEntity =>
+        (category, account) =>
+        {
+            account.Category = category;
+            account.CategoryId = category?.Id;
+        };
 }

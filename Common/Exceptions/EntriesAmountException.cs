@@ -10,8 +10,8 @@ public class EntriesAmountException : ApplicationBaseException
     {
     }
 
-    public EntriesAmountException(Exception innerException)
-        : base(_innerMessage, innerException)
+    public EntriesAmountException(Exception innerException) :
+        base(_innerMessage, innerException)
     {
     }
 }

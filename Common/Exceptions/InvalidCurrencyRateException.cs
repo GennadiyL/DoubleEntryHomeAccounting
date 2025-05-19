@@ -12,8 +12,8 @@ public class InvalidCurrencyRateException : ApplicationBaseException
     {
     }
 
-    public InvalidCurrencyRateException(decimal rate, Exception innerException)
-        : base(string.Format(_innerMessage, rate), innerException)
+    public InvalidCurrencyRateException(decimal rate, Exception innerException) :
+        base(string.Format(_innerMessage, rate), innerException)
     {
         Rate = rate;
     }

@@ -22,16 +22,15 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
     public async Task<Guid> Add(TParam param)
     {
         Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
 
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
         TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, param.GroupId);
-        ICollection<TElement> elements = group.Elements;
 
-        Guard.CheckEntityWithSameName(elements, Guid.Empty, param.Name);
+        Guard.CheckEntityWithSameName(group.Elements, Guid.Empty, param.Name);
 
         TElement addedEntity = new TElement
         {
@@ -39,11 +38,11 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order =  elements.GetMaxOrder() + 1,
+            Order =  group.Elements.GetMaxOrder() + 1,
             GroupId = param.GroupId
         };
 
-        elements.Add(addedEntity);
+        group.Elements.Add(addedEntity);
 
         await elementRepository.Add(addedEntity);
 
@@ -55,15 +54,17 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
     public async Task Update(Guid entityId, TParam param)
     {
         Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
 
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
         TElement updatedEntity = await Guard.CheckAndGetEntityById(elementRepository.GetById, entityId);
-        ICollection<TElement> elements = await elementRepository.GetElementsByGroupId(updatedEntity.GroupId);
-        Guard.CheckEntityWithSameName(elements, updatedEntity.Id, param.Name);
+
+        TGroup group = await elementRepository.GetGroupWithElementsByGroupId(updatedEntity.GroupId);
+
+        Guard.CheckEntityWithSameName(group.Elements, updatedEntity.Id, param.Name);
 
         updatedEntity.Name = param.Name;
         updatedEntity.Description = param.Description;
@@ -82,20 +83,21 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
         TElement deletedEntity = await Guard.CheckAndGetEntityById(elementRepository.GetById, entityId);
-        ICollection<TElement> elements = await elementRepository.GetElementsByGroupId(deletedEntity.GroupId);
+        
+        TGroup group = await elementRepository.GetGroupWithElementsByGroupId(deletedEntity.GroupId);
 
         ICollection<Account> accounts = await GetAccountsByEntity(accountRepository, deletedEntity);
         foreach (Account account in accounts)
         {
-            AccountEntitySetter(default, account);
+            SetAccountEntity(default, account);
             await accountRepository.Update(account);
         }
 
-        elements.Remove(deletedEntity);
-        elements.Reorder();
+        group.Elements.Remove(deletedEntity);
+        group.Elements.Reorder();
 
         await elementRepository.Delete(deletedEntity.Id);
-        await elementRepository.Update(elements);
+        await elementRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
     }
@@ -113,6 +115,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         }
 
         TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, entity.GroupId);
+        
         group.Elements.SetOrder(entity, order);
 
         await elementRepository.Update(group.Elements);
@@ -139,7 +142,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         await unitOfWork.SaveChanges();
     }
 
-    public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
+    public async Task MoveToAnotherGroup(Guid entityId, Guid toGroupId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
@@ -147,7 +150,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
         TElement entity = await Guard.CheckAndGetEntityById(elementRepository.GetById, entityId);
         TGroup fromGroup = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, entity.GroupId);
-        TGroup toGroup = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, groupId);
+        TGroup toGroup = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, toGroupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -155,14 +158,14 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         }
 
         await Guard.CheckElementWithSameName(elementRepository, toGroup.Id, entity.Id, entity.Name);
-        int newOrder = await elementRepository.GetMaxOrderInGroup(toGroup.Id) + 1;
 
-        fromGroup.Elements.Remove(entity);
         entity.Group = toGroup;
+        entity.GroupId = toGroup.Id;
+        entity.Order = await elementRepository.GetMaxOrderInGroup(toGroup.Id) + 1;
         toGroup.Elements.Add(entity);
-
+        
+        fromGroup.Elements.Remove(entity);
         fromGroup.Elements.Reorder();
-        toGroup.Elements.SetOrder(entity, newOrder);
 
         await elementRepository.Update(toGroup.Elements);
         await elementRepository.Update(fromGroup.Elements);
@@ -170,33 +173,33 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         await unitOfWork.SaveChanges();
     }
 
-    public async Task CombineElements(Guid primaryId, Guid secondaryId)
+    public async Task CombineElements(Guid toElementId, Guid fromElementId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        TElement primaryEntity = await Guard.CheckAndGetEntityById(elementRepository.GetById, primaryId);
-        TElement secondaryEntity = await Guard.CheckAndGetEntityById(elementRepository.GetById, secondaryId);
+        TElement toElement = await Guard.CheckAndGetEntityById(elementRepository.GetById, toElementId);
+        TElement fromElement = await Guard.CheckAndGetEntityById(elementRepository.GetById, fromElementId);
 
-        if (primaryEntity.Id == secondaryEntity.Id)
+        if (toElement.Id == fromElement.Id)
         {
             return;
         }
 
-        ICollection<Account> accounts = await GetAccountsByEntity(accountRepository, secondaryEntity);
+        ICollection<Account> accounts = await GetAccountsByEntity(accountRepository, fromElement);
         foreach (Account account in accounts)
         {
-            AccountEntitySetter(primaryEntity, account);
+            SetAccountEntity(toElement, account);
             await accountRepository.Update(account);
         }
 
-        TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, secondaryEntity.GroupId);
-        group.Elements.Remove(secondaryEntity);
+        TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, fromElement.GroupId);
+        group.Elements.Remove(fromElement);
         group.Elements.Reorder();
 
-        await elementRepository.Delete(secondaryEntity.Id);
+        await elementRepository.Delete(fromElement.Id);
         await elementRepository.Update(group.Elements);
 
         await unitOfWork.SaveChanges();
@@ -204,5 +207,5 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
     protected abstract Func<IAccountRepository, TElement, Task<ICollection<Account>>> GetAccountsByEntity { get; }
     
-    protected abstract Action<TElement, Account> AccountEntitySetter { get; }
+    protected abstract Action<TElement, Account> SetAccountEntity { get; }
 }

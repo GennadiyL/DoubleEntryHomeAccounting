@@ -12,8 +12,8 @@ public class InvalidCurrencyIsoCodeException : ApplicationBaseException
     {
     }
 
-    public InvalidCurrencyIsoCodeException(string isoCode, Exception innerException)
-        : base(string.Format(_innerMessage, isoCode), innerException)
+    public InvalidCurrencyIsoCodeException(string isoCode, Exception innerException) :
+        base(string.Format(_innerMessage, isoCode), innerException)
     {
         IsoCode = isoCode;
     }

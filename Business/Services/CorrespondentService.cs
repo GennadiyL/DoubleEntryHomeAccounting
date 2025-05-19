@@ -16,6 +16,10 @@ public class CorrespondentService : ElementService<CorrespondentGroup, Correspon
     protected override Func<IAccountRepository, Correspondent, Task<ICollection<Account>>> GetAccountsByEntity =>
         async (accountRepository, correspondent) => await accountRepository.GetByCorrespondentId(correspondent.Id);
 
-    protected override Action<Correspondent, Account> AccountEntitySetter =>
-        (correspondent, account) => account.Correspondent = correspondent;
+    protected override Action<Correspondent, Account> SetAccountEntity =>
+        (correspondent, account) =>
+        {
+            account.Correspondent = correspondent;
+            account.CorrespondentId = correspondent?.Id;
+        };
 }

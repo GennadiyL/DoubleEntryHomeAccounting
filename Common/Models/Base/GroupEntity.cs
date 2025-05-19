@@ -6,8 +6,8 @@ public abstract class GroupEntity<TGroup, TElement> : ReferenceEntity, IGroupEnt
     where TGroup : class, IGroupEntity<TGroup, TElement>
     where TElement : class, IElementEntity<TGroup, TElement>
 {
-    public Guid? ParentId { get; set; }
     public TGroup Parent { get; set; }
+    public Guid ParentId { get; set; }
     public ICollection<TGroup> Children { get; } = new List<TGroup>();
     public ICollection<TElement> Elements { get; } = new List<TElement>();
 }

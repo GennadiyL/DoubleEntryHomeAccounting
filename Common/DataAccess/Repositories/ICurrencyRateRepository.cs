@@ -5,6 +5,6 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 
 public interface ICurrencyRateRepository : IEntityRepository<CurrencyRate>
 {
-        Task<Currency> GetRatesByPeriod(Guid currencyId, DateOnly startDate, DateOnly finishDate);
-        Task<CurrencyRate> GetRateOnDate(Guid currencyId, DateOnly date);
+    Task<Currency> GetRatesByPeriod(Guid currencyId, DateOnly startDate, DateOnly finishDate);
+    Task<CurrencyRate> GetRateOnDate(Guid currencyId, DateOnly date);
 }

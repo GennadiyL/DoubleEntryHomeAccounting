@@ -233,7 +233,7 @@ public class UpdateTemplateGroupTests
         _groupRepository.GetById(child2.Id).Returns(child2);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
-        var param = new GroupParam
+        GroupParam param = new GroupParam
         {
             Name = secondName,
             Description = "description",

@@ -2,5 +2,5 @@
 
 public interface IGroupParam : IParam
 {
-    Guid? ParentId { get; set; }
+    Guid ParentId { get; set; }
 }

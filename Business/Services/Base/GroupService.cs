@@ -12,7 +12,6 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
     where TGroup : class, IGroupEntity<TGroup, TElement>, IReferenceEntity, new()
     where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity
     where TParam : class, INamedParam, IFavoriteParam, IGroupParam
-
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
 
@@ -20,63 +19,56 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
 
     public async Task<Guid> Add(TParam param)
     {
+        Guard.CheckParamForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
+
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
-        Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        TGroup parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, param.ParentId);
 
-        ICollection<TGroup> children;
-        if (param.ParentId.HasValue)
-        {
-            var parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, param.ParentId.Value);
-            children = parent.Children;
-        }
-        else
-        {
-            children = await groupRepository.GetChildrenByParentId(default);
-        }
+        Guard.CheckEntityWithSameName(parent.Children, Guid.Empty, param.Name);
 
-        Guard.CheckEntityWithSameName(children, Guid.Empty, param.Name);
-
-        TGroup addedEntity = new TGroup
+        TGroup addedGroup = new TGroup
         {
             Id = Guid.NewGuid(),
             Name = param.Name,
             Description = param.Description,
             IsFavorite = param.IsFavorite,
-            Order = children.GetMaxOrder() + 1,
+            Order = parent.Children.GetMaxOrder() + 1,
             ParentId = param.ParentId
         };
 
-        children.Add(addedEntity);
+        parent.Children.Add(addedGroup);
 
-        await groupRepository.Add(addedEntity);
+        await groupRepository.Add(addedGroup);
 
         await unitOfWork.SaveChanges();
 
-        return addedEntity.Id;
+        return addedGroup.Id;
     }
 
     public async Task Update(Guid entityId, TParam param)
     {
+        Guard.CheckParamForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
+
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
-        Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        TGroup updatedGroup = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
 
-        TGroup updatedEntity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
-        ICollection<TGroup> children = await groupRepository.GetChildrenByParentId(updatedEntity.ParentId);
-        Guard.CheckEntityWithSameName(children, updatedEntity.Id, param.Name);
+        TGroup parent = await groupRepository.GetParentWithChildrenByParentId(updatedGroup.ParentId);
 
-        updatedEntity.Name = param.Name;
-        updatedEntity.Description = param.Description;
-        updatedEntity.IsFavorite = param.IsFavorite;
+        Guard.CheckEntityWithSameName(parent.Children, updatedGroup.Id, param.Name);
 
-        await groupRepository.Update(updatedEntity);
+        updatedGroup.Name = param.Name;
+        updatedGroup.Description = param.Description;
+        updatedGroup.IsFavorite = param.IsFavorite;
+
+        await groupRepository.Update(updatedGroup);
 
         await unitOfWork.SaveChanges();
     }
@@ -88,17 +80,18 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
         IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
 
-        TGroup deletedEntity = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
-        ICollection<TGroup> children = await groupRepository.GetChildrenByParentId(deletedEntity.ParentId);
+        TGroup deletedGroup = await Guard.CheckAndGetEntityById(groupRepository.GetById, entityId);
 
-        await Guard.CheckExistedChildrenInTheParent(groupRepository, deletedEntity.Id);
-        await Guard.CheckExistedElementsInTheGroup(elementRepository, deletedEntity.Id);
+        TGroup parent = await groupRepository.GetParentWithChildrenByParentId(deletedGroup.ParentId);
 
-        children.Remove(deletedEntity);
-        children.Reorder();
+        await Guard.CheckExistedChildrenInTheParent(groupRepository, deletedGroup.Id);
+        await Guard.CheckExistedElementsInTheGroup(elementRepository, deletedGroup.Id);
 
-        await groupRepository.Delete(deletedEntity.Id);
-        await groupRepository.Update(children);
+        parent.Children.Remove(deletedGroup);
+        parent.Children.Reorder();
+
+        await groupRepository.Delete(deletedGroup.Id);
+        await groupRepository.Update(parent.Children);
 
         await unitOfWork.SaveChanges();
     }
@@ -115,20 +108,11 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
             return;
         }
 
-        ICollection<TGroup> entities;
-        if (entity.ParentId.HasValue)
-        {
-            TGroup parent = await groupRepository.GetParentWithChildrenByParentId(entity.ParentId.Value);
-            entities = parent.Children;
-        }
-        else
-        {
-            entities = await groupRepository.GetChildrenByParentId(null);
-        }
+        TGroup parent = await groupRepository.GetParentWithChildrenByParentId(entity.ParentId);
 
-        entities.SetOrder(entity, order);
+        parent.Children.SetOrder(entity, order);
 
-        await groupRepository.Update(entities);
+        await groupRepository.Update(parent.Children);
 
         await unitOfWork.SaveChanges();
     }
@@ -152,21 +136,79 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
         await unitOfWork.SaveChanges();
     }
 
-    //TODO: Implementation
-    public Task MoveToAnotherParent(Guid groupId, Guid parentId)
+    public async Task MoveToAnotherParent(Guid groupId, Guid toParentId)
     {
-        throw new NotImplementedException();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
+
+        TGroup entity = await Guard.CheckAndGetEntityById(groupRepository.GetById, groupId);
+        TGroup fromParent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, entity.ParentId);
+        TGroup toParent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, toParentId);
+
+        if (fromParent.Id == toParent.Id)
+        {
+            return;
+        }
+
+        await Guard.CheckGroupWithSameName(groupRepository, toParent.Id, entity.Id, entity.Name);
+
+        entity.Parent = toParent;
+        entity.ParentId = toParent.Id;
+        entity.Order = await groupRepository.GetMaxOrderInParent(toParent.Id) + 1;
+        toParent.Children.Add(entity);
+
+        fromParent.Children.Remove(entity);
+        fromParent.Children.Reorder();
+
+        await groupRepository.Update(toParent.Children);
+        await groupRepository.Update(fromParent.Children);
+
+        await unitOfWork.SaveChanges();
     }
 
-    //TODO: Implementation
-    public Task CombineChildren(Guid primaryId, Guid secondaryId)
+    public async Task CombineChildren(Guid toGroupId, Guid fromGroupId)
     {
-        throw new NotImplementedException();
-    }
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
-    //TODO: Implementation
-    public Task CombineElements(Guid primaryId, Guid secondaryId)
-    {
-        throw new NotImplementedException();
+        IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
+        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
+
+        TGroup toGroup = await Guard.CheckAndGetEntityById(groupRepository.GetById, toGroupId);
+        TGroup fromGroup = await Guard.CheckAndGetEntityById(groupRepository.GetById, fromGroupId);
+
+        if (toGroup.Id == fromGroup.Id)
+        {
+            return;
+        }
+
+        toGroup = await elementRepository.GetGroupWithElementsByGroupId(toGroupId);
+        fromGroup = await elementRepository.GetGroupWithElementsByGroupId(fromGroupId);
+        int nextElementOrder = await elementRepository.GetMaxOrderInGroup(toGroupId) + 1;
+        foreach (TElement element in fromGroup.Elements)
+        {
+            fromGroup.Elements.Remove(element);
+            element.Order = nextElementOrder++;
+            toGroup .Elements.Add(element);
+        }
+
+        toGroup = await groupRepository.GetParentWithChildrenByParentId(toGroupId);
+        fromGroup = await groupRepository.GetParentWithChildrenByParentId(fromGroupId);
+        int nextChildOrder = await groupRepository.GetMaxOrderInParent(toGroupId) + 1;
+        foreach (TGroup child in fromGroup .Children)
+        {
+            fromGroup.Children.Remove(child);
+            child.Order = nextChildOrder++;
+            toGroup .Children.Add(child);
+        }
+        
+        TGroup parent = await Guard.CheckAndGetEntityById(groupRepository.GetParentWithChildrenByParentId, fromGroup.ParentId);
+        parent.Children.Remove(fromGroup);
+        parent.Children.Reorder();
+
+        await groupRepository.Delete(fromGroup.Id);
+        await groupRepository.Update(parent.Children);
+
+        await unitOfWork.SaveChanges();
     }
 }

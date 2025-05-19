@@ -8,6 +8,6 @@ public interface IElementService<TGroup, TElement, in TParam> : IReferenceServic
     where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity
     where TParam : class, IParam
 {
-    Task MoveToAnotherGroup(Guid entityId, Guid groupId);
-    Task CombineElements(Guid primaryId, Guid secondaryId);
+    Task MoveToAnotherGroup(Guid entityId, Guid toGroupId);
+    Task CombineElements(Guid toElementId, Guid fromElementId);
 }

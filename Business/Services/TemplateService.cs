@@ -132,7 +132,7 @@ public class TemplateService : ITemplateService
         await unitOfWork.SaveChanges();
     }
 
-    public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
+    public async Task MoveToAnotherGroup(Guid entityId, Guid toGroupId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
@@ -140,7 +140,7 @@ public class TemplateService : ITemplateService
 
         Template entity = await Guard.CheckAndGetEntityById(templateRepository.GetById, entityId);
         TemplateGroup fromGroup = await templateRepository.GetGroupWithElementsByGroupId(entity.Group.Id);
-        TemplateGroup toGroup = await templateRepository.GetGroupWithElementsByGroupId(groupId);
+        TemplateGroup toGroup = await templateRepository.GetGroupWithElementsByGroupId(toGroupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -163,7 +163,7 @@ public class TemplateService : ITemplateService
         await unitOfWork.SaveChanges();
     }
 
-    public Task CombineElements(Guid primaryId, Guid secondaryId)
+    public Task CombineElements(Guid toElementId, Guid fromElementId)
     {
         throw new NotSupportedException($"{nameof(CombineElements)} doesn't support for Templates");
     }
@@ -190,7 +190,7 @@ public class TemplateService : ITemplateService
     {
         Guard.CheckParamForNull(param);
 
-        Guard.CheckParamNameForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
 
         if (param.Entries == null || param.Entries.Count < 2)
         {

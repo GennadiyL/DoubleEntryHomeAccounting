@@ -43,6 +43,7 @@ public class CurrencyService : ICurrencyService
 
         await unitOfWork.SaveChanges();
 
+
         return addedCurrency.Id;
     }
 

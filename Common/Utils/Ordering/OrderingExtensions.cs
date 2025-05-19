@@ -25,6 +25,7 @@ public static class OrderingExtensions
                     item.Order++;
                 }
             }
+
             orderedEntity.Order = order;
             entities.Reorder();
         }
@@ -37,6 +38,7 @@ public static class OrderingExtensions
                     item.Order--;
                 }
             }
+
             orderedEntity.Order = order;
             entities.Reorder();
         }

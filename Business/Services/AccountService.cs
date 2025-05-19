@@ -27,9 +27,10 @@ public class AccountService : IAccountService
         IProjectRepository projectRepository = unitOfWork.GetRepository<IProjectRepository>();
 
         Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
 
         AccountGroup group = await Guard.CheckAndGetEntityById(accountGroupRepository.GetById, param.GroupId);
+        
         await Guard.CheckElementWithSameName(accountRepository, group.Id, Guid.Empty, param.Name);
 
         Account addedEntity = new Account
@@ -40,15 +41,16 @@ public class AccountService : IAccountService
             IsFavorite = param.IsFavorite,
             Order = await accountRepository.GetMaxOrderInGroup(group.Id) + 1,
             Currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, param.CurrencyId),
-            Category = param.CategoryId == default
-                ? default
-                : await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
-            Project = param.ProjectId == default
-                ? default
-                : await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value),
-            Correspondent = param.CorrespondentId == default
-                ? default
-                : await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
+            Category = param.CategoryId == default ?
+                default :
+                await Guard.CheckAndGetEntityById(categoryRepository.GetById, param.CategoryId.Value),
+            Project = param.ProjectId == default ?
+                default :
+                await Guard.CheckAndGetEntityById(projectRepository.GetById, param.ProjectId.Value),
+            Correspondent = param.CorrespondentId == default ?
+                default :
+                await Guard.CheckAndGetEntityById(correspondentRepository.GetById, param.CorrespondentId.Value),
+            Group = group
         };
 
         addedEntity.Group = group;
@@ -71,7 +73,7 @@ public class AccountService : IAccountService
         IProjectRepository projectRepository = unitOfWork.GetRepository<IProjectRepository>();
 
         Guard.CheckParamForNull(param);
-        Guard.CheckParamNameForNull(param);
+        Guard.CheckParamNameForNullOrEmpty(param);
 
         Account updatedEntity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         await Guard.CheckElementWithSameName(accountRepository, updatedEntity.GroupId, entityId, param.Name);
@@ -168,7 +170,7 @@ public class AccountService : IAccountService
         await unitOfWork.SaveChanges();
     }
 
-    public async Task MoveToAnotherGroup(Guid entityId, Guid groupId)
+    public async Task MoveToAnotherGroup(Guid entityId, Guid toGroupId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
@@ -176,7 +178,7 @@ public class AccountService : IAccountService
 
         Account entity = await Guard.CheckAndGetEntityById(accountRepository.GetById, entityId);
         AccountGroup fromGroup = await accountRepository.GetGroupWithElementsByGroupId(entity.Group.Id);
-        AccountGroup toGroup = await accountRepository.GetGroupWithElementsByGroupId(groupId);
+        AccountGroup toGroup = await accountRepository.GetGroupWithElementsByGroupId(toGroupId);
 
         if (fromGroup.Id == toGroup.Id)
         {
@@ -199,7 +201,7 @@ public class AccountService : IAccountService
         await unitOfWork.SaveChanges();
     }
 
-    public async Task CombineElements(Guid primaryId, Guid secondaryId)
+    public async Task CombineElements(Guid toElementId, Guid fromElementId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
@@ -207,8 +209,8 @@ public class AccountService : IAccountService
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Account primaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, primaryId);
-        Account secondaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, secondaryId);
+        Account primaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, toElementId);
+        Account secondaryAccount = await Guard.CheckAndGetEntityById(accountRepository.GetById, fromElementId);
 
         if (primaryAccount.Id == secondaryAccount.Id)
         {

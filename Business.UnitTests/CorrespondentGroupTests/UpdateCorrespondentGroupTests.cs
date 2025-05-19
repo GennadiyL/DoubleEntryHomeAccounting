@@ -6,6 +6,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 
 namespace Business.UnitTests.CorrespondentGroupTests;
 
@@ -34,6 +35,7 @@ public class UpdateCorrespondentGroupTests
     [TearDown]
     public void TearDown()
     {
+        
         _unitOfWork?.Dispose();
     }
 
@@ -53,6 +55,7 @@ public class UpdateCorrespondentGroupTests
             IsFavorite = false,
         };
 
+        
         CorrespondentGroup entity = new CorrespondentGroup
         {
             Name = originalName,
@@ -233,12 +236,13 @@ public class UpdateCorrespondentGroupTests
         _groupRepository.GetById(child2.Id).Returns(child2);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
-        var param = new GroupParam
+        GroupParam param = new GroupParam
         {
             Name = secondName,
             Description = "description",
             IsFavorite = true,
             ParentId = parent.Id
+            
         };
         Assert.ThrowsAsync<DuplicationNameException>(async () => await _service.Update(child1.Id, param));
     }

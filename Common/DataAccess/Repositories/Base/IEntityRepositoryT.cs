@@ -7,7 +7,7 @@ public interface IEntityRepository<T> : IEntityRepository
 {
     Task<T> GetById(Guid id);
     Task<ICollection<T>> GetAll();
-    Task<int> GetCount<TP1>();
+    Task<int> GetCount();
 
     Task<T> Add(T entity);
     Task<IList<T>> Add(ICollection<T> entities);

@@ -8,7 +8,6 @@ public interface IGroupService<TGroup, TElement, in TParam> : IReferenceService<
     where TElement : class, IElementEntity<TGroup, TElement>, IReferenceEntity
     where TParam : class, IParam
 {
-    Task MoveToAnotherParent(Guid groupId, Guid parentId);
-    Task CombineChildren(Guid primaryId, Guid secondaryId);
-    Task CombineElements(Guid primaryId, Guid secondaryId);
+    Task MoveToAnotherParent(Guid groupId, Guid toParentId);
+    Task CombineChildren(Guid toGroupId, Guid fromGroupId);
 }

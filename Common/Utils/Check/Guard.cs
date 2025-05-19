@@ -9,13 +9,13 @@ public static class Guard
 {
     public static void CheckParamForNull<T>(T param)
     {
-        if (param == null) 
+        if (param == null)
         {
             throw new NullParameterException(typeof(T));
         }
     }
 
-    public static void CheckParamNameForNull<T>(T param) where T : INamedParam
+    public static void CheckParamNameForNullOrEmpty<T>(T param) where T : INamedParam
     {
         if (param.Name == null)
         {
@@ -32,15 +32,15 @@ public static class Guard
     }
 
     public static async Task CheckGroupWithSameName<TGroup, TElement>(
-        IGroupRepository<TGroup, TElement> repository, 
-        Guid? parentId,
+        IGroupRepository<TGroup, TElement> repository,
+        Guid parentId,
         Guid id,
         string name)
         where TGroup : class, IEntity, INamedEntity, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement>
     {
-        ICollection<TGroup> children = await repository.GetChildrenByParentId(parentId);
-        CheckEntityWithSameName(children, id, name);
+        TGroup parent = await repository.GetParentWithChildrenByParentId(parentId);
+        CheckEntityWithSameName(parent.Children, id, name);
     }
 
     public static async Task CheckElementWithSameName<TGroup, TElement>(
@@ -49,18 +49,16 @@ public static class Guard
         Guid id,
         string name)
         where TGroup : class, IGroupEntity<TGroup, TElement>
-        where TElement : class, IEntity, INamedEntity, IElementEntity<TGroup, TElement> 
+        where TElement : class, IEntity, INamedEntity, IElementEntity<TGroup, TElement>
     {
-        ICollection<TElement> elements = await repository.GetElementsByGroupId(groupId);
-        CheckEntityWithSameName(elements, id, name);
+        TGroup group = await repository.GetGroupWithElementsByGroupId(groupId);
+        CheckEntityWithSameName(group.Elements, id, name);
     }
 
     public static void CheckEntityWithSameName<T>(ICollection<T> entities, Guid id, string name)
         where T : IEntity, INamedEntity
     {
-        if (entities.Where(e => string.Equals(
-                e.Name,
-                name,
+        if (entities.Where(e => string.Equals(e.Name, name,
                 StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault(t => t.Id != id) != null)
         {
             throw new DuplicationNameException(typeof(T), name);
@@ -95,8 +93,7 @@ public static class Guard
 
     public static async Task<T> CheckAndGetEntityById<T>(Func<Guid, Task<T>> func, Guid entityId) where T : IEntity
     {
-        T item = await func(entityId) ?? 
-                 throw new MissingEntityException(typeof(T), entityId); 
+        T item = await func(entityId) ?? throw new MissingEntityException(typeof(T), entityId);
         return item;
     }
 }

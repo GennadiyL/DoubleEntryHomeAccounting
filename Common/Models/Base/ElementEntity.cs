@@ -6,6 +6,6 @@ public abstract class ElementEntity<TGroup, TElement> : ReferenceEntity, IElemen
     where TGroup : class, IGroupEntity<TGroup, TElement>
     where TElement : class, IElementEntity<TGroup, TElement>
 {
-    public Guid GroupId { get; set; }
     public TGroup Group { get; set; }
+    public Guid GroupId { get; set; }
 }

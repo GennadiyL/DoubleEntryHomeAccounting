@@ -13,8 +13,8 @@ public class DuplicationNameException : ApplicationBaseException
     {
     }
 
-    public DuplicationNameException(Type entityType, string name, Exception innerException)
-        : base(string.Format(_innerMessage, entityType.Name, name), innerException)
+    public DuplicationNameException(Type entityType, string name, Exception innerException) : 
+        base(string.Format(_innerMessage, entityType.Name, name), innerException)
     {
         TypeName = entityType.Name;
         Name = name;

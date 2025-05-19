@@ -5,6 +5,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 public class ReferenceEntityException : ApplicationBaseException
 {
     private const string _innerMessage = "{0} entity with id {2} cannot be deleted.  One or more {1} entites use it.";
+    
     public string ParentTypeName { get; }
     public string ChildTypeName { get; }
     public Guid EntityId { get; }

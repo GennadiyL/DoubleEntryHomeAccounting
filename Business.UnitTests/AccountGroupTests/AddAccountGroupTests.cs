@@ -34,7 +34,6 @@ public class AddAccountGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
     }
 
     [TestCase("Name", "Description", true, 6)]
@@ -53,8 +52,8 @@ public class AddAccountGroupTests
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
         _groupRepository.GetMaxOrderInParent(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<AccountGroup>(p => entity = p));
-
         GroupParam param = new GroupParam
+
         {
             Name = name,
             Description = description,
@@ -148,14 +147,14 @@ public class AddAccountGroupTests
             Id = Guid.NewGuid(),
             Name = "Group"
         };
-        
-        parent.Children.Add(new AccountGroup() {Id = Guid.NewGuid() , Name = firstName});
+
+        parent.Children.Add(new AccountGroup() { Id = Guid.NewGuid(), Name = firstName });
         parent.Children.Add(new AccountGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
-        var param = new GroupParam()
+        GroupParam param = new GroupParam()
         {
             Name = secondName,
             Description = "description",

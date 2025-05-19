@@ -155,7 +155,7 @@ public class AddTemplateGroupTests
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
 
-        var param = new GroupParam()
+        GroupParam param = new GroupParam()
         {
             Name = secondName,
             Description = "description",
