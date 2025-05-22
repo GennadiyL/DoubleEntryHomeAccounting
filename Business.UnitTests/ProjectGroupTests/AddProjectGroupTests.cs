@@ -148,8 +148,8 @@ public class AddProjectGroupTests
             Id = Guid.NewGuid(),
             Name = "Group"
         };
-        
-        parent.Children.Add(new ProjectGroup() {Id = Guid.NewGuid() , Name = firstName});
+
+        parent.Children.Add(new ProjectGroup() { Id = Guid.NewGuid(), Name = firstName });
         parent.Children.Add(new ProjectGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);

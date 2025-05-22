@@ -16,7 +16,7 @@ public class ProjectService : ElementService<ProjectGroup, Project, ElementParam
     protected override Func<IAccountRepository, Project, Task<ICollection<Account>>> GetAccountsByEntity =>
         async (accountRepository, project) => await accountRepository.GetByProjectId(project.Id);
 
-    protected override Action<Project, Account> SetAccountEntity => 
+    protected override Action<Project, Account> SetAccountEntity =>
         (project, account) =>
         {
             account.Project = project;

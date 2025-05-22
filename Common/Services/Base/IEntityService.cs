@@ -3,7 +3,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
-public interface IEntityService<T, in TParam> 
+public interface IEntityService<T, in TParam>
     where T : IEntity
     where TParam : IParam
 {

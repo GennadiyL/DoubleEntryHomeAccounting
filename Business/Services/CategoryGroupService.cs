@@ -6,7 +6,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-public class CategoryGroupService 
+public class CategoryGroupService
     : GroupService<CategoryGroup, Category, GroupParam>, ICategoryGroupService
 {
     public CategoryGroupService(IUnitOfWorkFactory unitOfWorkFactory) : base(unitOfWorkFactory)

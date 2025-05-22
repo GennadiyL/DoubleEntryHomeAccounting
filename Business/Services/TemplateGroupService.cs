@@ -6,7 +6,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Services;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-public class TemplateGroupService 
+public class TemplateGroupService
     : GroupService<TemplateGroup, Template, GroupParam>, ITemplateGroupService
 {
     public TemplateGroupService(IUnitOfWorkFactory unitOfWorkFactory) : base(unitOfWorkFactory)

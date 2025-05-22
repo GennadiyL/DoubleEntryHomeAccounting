@@ -79,7 +79,7 @@ public class TransactionService : ITransactionService
 
         ITransactionRepository transactionRepository = unitOfWork.GetRepository<ITransactionRepository>();
 
-        Transaction deletedTransaction = await Guard.CheckAndGetEntityById(transactionRepository.GetTransactionById, entityId); 
+        Transaction deletedTransaction = await Guard.CheckAndGetEntityById(transactionRepository.GetTransactionById, entityId);
         await transactionRepository.Delete(deletedTransaction.Id);
     }
 
@@ -157,7 +157,6 @@ public class TransactionService : ITransactionService
                 TransactionId = transaction.Id
             };
             entries.Add(addedEntry);
-
         }
 
         return entries;

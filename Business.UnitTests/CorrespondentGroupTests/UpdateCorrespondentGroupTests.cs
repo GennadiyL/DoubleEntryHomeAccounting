@@ -35,7 +35,6 @@ public class UpdateCorrespondentGroupTests
     [TearDown]
     public void TearDown()
     {
-        
         _unitOfWork?.Dispose();
     }
 
@@ -55,7 +54,7 @@ public class UpdateCorrespondentGroupTests
             IsFavorite = false,
         };
 
-        
+
         CorrespondentGroup entity = new CorrespondentGroup
         {
             Name = originalName,
@@ -242,7 +241,6 @@ public class UpdateCorrespondentGroupTests
             Description = "description",
             IsFavorite = true,
             ParentId = parent.Id
-            
         };
         Assert.ThrowsAsync<DuplicationNameException>(async () => await _service.Update(child1.Id, param));
     }

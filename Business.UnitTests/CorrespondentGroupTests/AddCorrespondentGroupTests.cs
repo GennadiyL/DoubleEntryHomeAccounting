@@ -90,7 +90,7 @@ public class AddCorrespondentGroupTests
             Name = name,
             Description = description,
             IsFavorite = isFavorite,
-            ParentId = null,
+            ParentId = default,
         };
         await _service.Add(param);
 
@@ -148,8 +148,8 @@ public class AddCorrespondentGroupTests
             Id = Guid.NewGuid(),
             Name = "Group"
         };
-        
-        parent.Children.Add(new CorrespondentGroup() {Id = Guid.NewGuid() , Name = firstName});
+
+        parent.Children.Add(new CorrespondentGroup() { Id = Guid.NewGuid(), Name = firstName });
         parent.Children.Add(new CorrespondentGroup() { Id = Guid.NewGuid(), Name = secondName });
 
         _groupRepository.GetById(parent.Id).Returns(parent);

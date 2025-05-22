@@ -5,7 +5,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 public class MissingEntityException : ApplicationBaseException
 {
     private const string _innerMessage = "Cannot find {0} entity with id {1}.";
-    
+
     public string TypeName { get; }
     public Guid Id { get; }
 

@@ -5,7 +5,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 public class GroupContainsSubGroupsException : ApplicationBaseException
 {
     private const string _innerMessage = "{0}Group contains {1} {0}SubGroups and cannot be deleted.";
-    
+
     public string TypeName { get; }
     public int SubGroupAmount { get; }
 
@@ -13,7 +13,7 @@ public class GroupContainsSubGroupsException : ApplicationBaseException
     {
     }
 
-    public GroupContainsSubGroupsException(Type entityType, int subGroupAmount, Exception innerException) : 
+    public GroupContainsSubGroupsException(Type entityType, int subGroupAmount, Exception innerException) :
         base(string.Format(_innerMessage, entityType.Name, subGroupAmount), innerException)
     {
         TypeName = entityType.Name;

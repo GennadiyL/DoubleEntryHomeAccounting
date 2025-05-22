@@ -14,7 +14,7 @@ public static class CurrencyDataUtils
                 Symbol = ri.CurrencySymbol,
                 Name = ri.CurrencyEnglishName
             }).ToList();
-        
+
         return currencyData;
     }
 
@@ -22,7 +22,7 @@ public static class CurrencyDataUtils
     {
         RegionInfo regionInfo = GetRegionInfos()
             .FirstOrDefault(ri => ri.ISOCurrencySymbol == isoCode);
-        
+
         if (regionInfo == null)
         {
             throw new InvalidCurrencyIsoCodeException(isoCode);
@@ -40,7 +40,7 @@ public static class CurrencyDataUtils
     {
         RegionInfo regionInfo = GetRegionInfos()
             .FirstOrDefault(ri => ri.ISOCurrencySymbol == isoCode);
-        
+
         if (regionInfo == null)
         {
             currencyData = null;

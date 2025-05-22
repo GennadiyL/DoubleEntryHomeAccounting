@@ -5,9 +5,9 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 public class NullParameterException : ApplicationBaseException
 {
     private const string _innerMessage = "Parameter {0} cannot be null.";
-    
+
     public string TypeName { get; }
-    
+
     public NullParameterException(Type entityType) : this(entityType, null)
     {
     }

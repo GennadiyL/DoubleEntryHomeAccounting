@@ -80,7 +80,7 @@ public class TemplateService : ITemplateService
 
         ITemplateRepository templateRepository = unitOfWork.GetRepository<ITemplateRepository>();
 
-        Template deletedEntity = await Guard.CheckAndGetEntityById(templateRepository.GetTemplateById, entityId); 
+        Template deletedEntity = await Guard.CheckAndGetEntityById(templateRepository.GetTemplateById, entityId);
 
         TemplateGroup group = await templateRepository.GetGroupWithElementsByGroupId(deletedEntity.GroupId);
 

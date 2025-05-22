@@ -32,7 +32,7 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
 
         Guard.CheckEntityWithSameName(group.Elements, Guid.Empty, param.Name);
 
-        TElement addedElement = new TElement
+        TElement addedEntity = new TElement
         {
             Id = Guid.NewGuid(),
             Name = param.Name,
@@ -43,13 +43,13 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
             GroupId = param.GroupId
         };
 
-        group.Elements.Add(addedElement);
+        group.Elements.Add(addedEntity);
 
-        await elementRepository.Add(addedElement);
+        await elementRepository.Add(addedEntity);
 
         await unitOfWork.SaveChanges();
 
-        return addedElement.Id;
+        return addedEntity.Id;
     }
 
     public async Task Update(Guid entityId, TParam param)
@@ -94,6 +94,8 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
             await accountRepository.Update(account);
         }
 
+        deletedElement.Group = default;
+        deletedElement.GroupId = default;
         group.Elements.Remove(deletedElement);
         group.Elements.Reorder();
 
@@ -197,6 +199,8 @@ public abstract class ElementService<TGroup, TElement, TParam> : IElementService
         }
 
         TGroup group = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, fromElement.GroupId);
+        fromElement.Group = default;
+        fromElement.GroupId = default;
         group.Elements.Remove(fromElement);
         group.Elements.Reorder();
 

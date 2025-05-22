@@ -26,7 +26,7 @@ internal class CurrencyRateService : ICurrencyRateService
         await CheckParamDate(param, systemConfigRepository);
 
         CurrencyRate currencyRate = await Guard.CheckAndGetEntityById(
-            g => currencyRateRepository.GetRateOnDate(g, DateOnly.FromDateTime(DateTime.Today)), 
+            g => currencyRateRepository.GetRateOnDate(g, DateOnly.FromDateTime(DateTime.Today)),
             param.CurrencyId);
 
         if (currencyRate.Date == DateOnly.FromDateTime(DateTime.Today))

@@ -8,7 +8,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 
 public static class Guard
 {
-    public static void CheckParamForNull<T>(T param)
+    public static void CheckParamForNull<T>(T param) where T : class
     {
         if (param == null)
         {
@@ -114,7 +114,7 @@ public static class Guard
     }
 
 
-    public static void CheckIsRool<TGroup, TElement>(TGroup group)
+    public static void CheckIsRoot<TGroup, TElement>(TGroup group)
         where TGroup : class, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement>
     {

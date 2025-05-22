@@ -36,7 +36,7 @@ public class Roots
         group.Parent = group;
         return group;
     }
-    
+
     private static CategoryGroup CreateCategoryGroup()
     {
         CategoryGroup group = new CategoryGroup
@@ -85,4 +85,6 @@ public class Roots
         where TGroup : class, IGroupEntity<TGroup, TElement>
         where TElement : class, IElementEntity<TGroup, TElement> =>
         RootIds.Contains(group.Id);
+
+    public static bool IsRoot(Guid id) => RootIds.Contains(id);
 }
