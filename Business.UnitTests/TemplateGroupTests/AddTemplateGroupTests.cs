@@ -34,7 +34,6 @@ public class AddTemplateGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
     }
 
     [TestCase("Name", "Description", true, 6)]
@@ -90,7 +89,7 @@ public class AddTemplateGroupTests
             Name = name,
             Description = description,
             IsFavorite = isFavorite,
-            ParentId = null,
+            ParentId = default,
         };
         await _service.Add(param);
 

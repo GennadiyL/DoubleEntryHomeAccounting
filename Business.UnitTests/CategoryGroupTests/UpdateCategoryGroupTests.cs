@@ -2,10 +2,10 @@
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
+using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
-using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 
 namespace Business.UnitTests.CategoryGroupTests;
 
@@ -34,7 +34,6 @@ public class UpdateCategoryGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
     }
 
     [TestCase("Name", "Description", true, "Mom", "All", false)]

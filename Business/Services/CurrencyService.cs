@@ -13,6 +13,7 @@ namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 public class CurrencyService : ICurrencyService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;
+    
     public CurrencyService(IUnitOfWorkFactory unitOfWorkFactory) => _unitOfWorkFactory = unitOfWorkFactory;
 
     public async Task<Guid> Add(CurrencyParam param, decimal initialRate)

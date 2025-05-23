@@ -37,7 +37,6 @@ public class DeleteCategoryGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
     }
 
     [Test]
@@ -75,7 +74,7 @@ public class DeleteCategoryGroupTests
         CategoryGroup child2 = new CategoryGroup { Id = Guid.NewGuid(), Name = "secondName", ParentId = default, Order = 2 };
 
         _groupRepository.GetById(child1.Id).Returns(child1);
-        _groupRepository.Where(Arg.Any<Func<CategoryGroup, bool>>()).Returns(new List<CategoryGroup>() { child2 });
+        //_groupRepository.Where(Arg.Any<Func<CategoryGroup, bool>>()).Returns(new List<CategoryGroup>() { child2 });
         await _groupRepository.Delete(Arg.Do<Guid>(e => deletedId = e));
 
         await _service.Delete(child1.Id);

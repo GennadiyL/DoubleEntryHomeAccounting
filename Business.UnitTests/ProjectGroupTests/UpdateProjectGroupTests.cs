@@ -34,7 +34,6 @@ public class UpdateProjectGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
     }
 
     [TestCase("Name", "Description", true, "Mom", "All", false)]

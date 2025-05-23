@@ -16,12 +16,13 @@ internal class CurrencyRateService : ICurrencyRateService
 
     public async Task<Guid> AddOrUpdate(CurrencyRateParam param)
     {
+        Guard.CheckParamForNull(param);
+        
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
 
-        Guard.CheckParamForNull(param);
         CheckParamRate(param);
         await CheckParamDate(param, systemConfigRepository);
 
@@ -37,7 +38,7 @@ internal class CurrencyRateService : ICurrencyRateService
         }
         else
         {
-            currencyRate = new CurrencyRate()
+            currencyRate = new CurrencyRate
             {
                 Id = Guid.NewGuid(),
                 Currency = currencyRate.Currency,

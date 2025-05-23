@@ -35,7 +35,7 @@ public class UpdateCorrespondentGroupTests
     [TearDown]
     public void TearDown()
     {
-        _unitOfWork?.Dispose();
+
     }
 
     [TestCase("Name", "Description", true, "Mom", "All", false)]

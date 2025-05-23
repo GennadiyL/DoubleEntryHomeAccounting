@@ -89,7 +89,7 @@ public class AddAccountGroupTests
             Name = name,
             Description = description,
             IsFavorite = isFavorite,
-            ParentId = null,
+            ParentId = default,
         };
         await _service.Add(param);
 
