@@ -1,6 +1,6 @@
 ﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
-public class CurrencyData
+public class CurrencyProfile
 {
     public string Code { get; set; }
     public string Symbol { get; set; }

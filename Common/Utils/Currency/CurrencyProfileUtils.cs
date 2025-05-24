@@ -3,22 +3,22 @@ using System.Globalization;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
-public static class CurrencyDataUtils
+public static class CurrencyProfileUtils
 {
-    public static List<CurrencyData> GetListOfAvailableCurrencyData()
+    public static List<CurrencyProfile> GetListOfAvailableCurrencyData()
     {
-        List<CurrencyData> currencyData = GetRegionInfos()
-            .Select(ri => new CurrencyData
+        List<CurrencyProfile> currencyProfiles = GetRegionInfos()
+            .Select(ri => new CurrencyProfile
             {
                 Code = ri!.ISOCurrencySymbol,
                 Symbol = ri.CurrencySymbol,
                 Name = ri.CurrencyEnglishName
             }).ToList();
 
-        return currencyData;
+        return currencyProfiles;
     }
 
-    public static CurrencyData GetCurrencyData(string isoCode)
+    public static CurrencyProfile GetCurrencyData(string isoCode)
     {
         RegionInfo regionInfo = GetRegionInfos()
             .FirstOrDefault(ri => ri.ISOCurrencySymbol == isoCode);
@@ -28,7 +28,7 @@ public static class CurrencyDataUtils
             throw new InvalidCurrencyIsoCodeException(isoCode);
         }
 
-        return new CurrencyData
+        return new CurrencyProfile
         {
             Code = regionInfo.ISOCurrencySymbol,
             Symbol = regionInfo.CurrencySymbol,
@@ -36,18 +36,18 @@ public static class CurrencyDataUtils
         };
     }
 
-    public static bool TryGetCurrencyData(string isoCode, out CurrencyData currencyData)
+    public static bool TryGetCurrencyData(string isoCode, out CurrencyProfile currencyProfile)
     {
         RegionInfo regionInfo = GetRegionInfos()
             .FirstOrDefault(ri => ri.ISOCurrencySymbol == isoCode);
 
         if (regionInfo == null)
         {
-            currencyData = null;
+            currencyProfile = null;
             return false;
         }
 
-        currencyData = new CurrencyData
+        currencyProfile = new CurrencyProfile
         {
             Code = regionInfo.ISOCurrencySymbol,
             Symbol = regionInfo.CurrencySymbol,

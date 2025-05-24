@@ -18,70 +18,69 @@ public class CurrencyService : ICurrencyService
 
     public async Task<Guid> Add(CurrencyParam param, decimal initialRate)
     {
+        Guard.CheckParamForNull(param);
+        CheckIsoCodeString(param.Code);
+        Guard.CheckCurrencyRate(initialRate);
+
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
-        Guard.CheckParamForNull(param);
-        CheckIsoCodeString(param.Code);
-        CheckInitialRate(initialRate);
-
-        CurrencyData currencyData = CurrencyDataUtils.GetCurrencyData(param.Code);
-        string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
-        string name = string.IsNullOrEmpty(param.Name) ? currencyData.Name : param.Name;
+        CurrencyProfile currencyProfile = CurrencyProfileUtils.GetCurrencyData(param.Code);
+        string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyProfile.Symbol : param.Symbol;
+        string name = string.IsNullOrEmpty(param.Name) ? currencyProfile.Name : param.Name;
 
         Currency addedCurrency = new Currency
         {
             Id = Guid.NewGuid(),
-            IsoCode = currencyData.Code,
+            IsoCode = currencyProfile.Code,
             Symbol = symbol,
             Name = name,
             Order = await currencyRepository.GetMaxOrder() + 1,
         };
 
-        addedCurrency.Rates.Add(new CurrencyRate { Rate = initialRate });
+        CurrencyRate currencyRate = new CurrencyRate
+        {
+            Id = Guid.NewGuid(),
+            Rate = initialRate,
+            Currency = addedCurrency,
+            CurrencyId = addedCurrency.Id,
+        };
+        addedCurrency.Rates.Add(currencyRate);
+        
         await currencyRepository.Add(addedCurrency);
 
         await unitOfWork.SaveChanges();
 
-
         return addedCurrency.Id;
     }
 
-    public async Task Update(CurrencyParam param)
+    public async Task Update(Guid currencyId, CurrencyParam param)
     {
+        Guard.CheckParamForNull(param);
+
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
-        Guard.CheckParamForNull(param);
-        CheckIsoCodeString(param.Code);
+        Currency updatedCurrency =  await Guard.CheckAndGetEntityById(currencyRepository.GetById, currencyId);
+        
+        updatedCurrency.Symbol = param.Symbol;
+        updatedCurrency.Name = param.Name;
 
-        CurrencyData currencyData = CurrencyDataUtils.GetCurrencyData(param.Code);
-        string symbol = string.IsNullOrEmpty(param.Symbol) ? currencyData.Symbol : param.Symbol;
-        string name = string.IsNullOrEmpty(param.Name) ? currencyData.Name : param.Name;
-
-        Currency updatedCurrency = await currencyRepository.GetByIsoCode(currencyData.Code);
-        updatedCurrency.Symbol = symbol;
-        updatedCurrency.Name = name;
-
+        await currencyRepository.Update(updatedCurrency);
+        
         await unitOfWork.SaveChanges();
     }
 
-    public async Task Delete(string isoCode)
+    public async Task Delete(Guid currencyId)
     {
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
         IAccountRepository accountRepository = unitOfWork.GetRepository<IAccountRepository>();
 
-        CheckIsoCodeString(isoCode);
-
-        Currency deletedCurrency = await currencyRepository.GetByIsoCode(isoCode);
-        if (deletedCurrency == null)
-        {
-            throw new MissingCurrencyException(isoCode);
-        }
+        Currency deletedCurrency =  await Guard.CheckAndGetEntityById(currencyRepository.GetById, currencyId);
 
         if ((await accountRepository.GetByCurrencyId(deletedCurrency.Id)).Any())
         {
@@ -89,6 +88,7 @@ public class CurrencyService : ICurrencyService
         }
 
         await currencyRepository.Delete(deletedCurrency.Id);
+        
         ICollection<Currency> currencies = await currencyRepository.GetAll();
         currencies.Reorder();
         await currencyRepository.Update(currencies);
@@ -123,12 +123,14 @@ public class CurrencyService : ICurrencyService
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
         Currency currency = await Guard.CheckAndGetEntityById(currencyRepository.GetById, entityId);
+        
         if (currency.IsFavorite == isFavorite)
         {
             return;
         }
 
         currency.IsFavorite = isFavorite;
+        
         await currencyRepository.Update(currency);
 
         await unitOfWork.SaveChanges();
@@ -139,14 +141,6 @@ public class CurrencyService : ICurrencyService
         if (string.IsNullOrEmpty(isoCode))
         {
             throw new InvalidCurrencyIsoCodeException(null);
-        }
-    }
-
-    private static void CheckInitialRate(decimal initialRate)
-    {
-        if (initialRate <= 0)
-        {
-            throw new InvalidCurrencyRateException(initialRate);
         }
     }
 }

@@ -1,7 +1,9 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
+using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
+using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Models;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
@@ -29,6 +31,35 @@ public static class Guard
         if (!((T[])Enum.GetValues(typeof(T))).Contains(param))
         {
             throw new InvalidEnumerationException(typeof(T), param);
+        }
+    }
+
+    public static void CheckCurrencyRate(decimal rate)
+    {
+        if (rate < CurrencyRateSettings.MinRate || rate > CurrencyRateSettings.MaxRate)
+        {
+            throw new InvalidCurrencyRateException(rate);
+        }
+    }
+
+    public static async Task CheckDate(ISystemConfigRepository systemConfigRepository, DateOnly date)
+    {
+        DateOnly minDate = await systemConfigRepository.GetMinDate();
+        DateOnly maxDate = await systemConfigRepository.GetMaxDate();
+        if (date < minDate || date > maxDate)
+        {
+            throw new DateTimeOutOfRangeException(minDate, maxDate, date);
+        }
+    }
+
+    public static async Task CheckDateTime(ISystemConfigRepository systemConfigRepository, DateTime dateTime)
+    {
+        DateOnly minDate = await systemConfigRepository.GetMinDate();
+        DateOnly maxDate = await systemConfigRepository.GetMaxDate();
+        DateOnly date = DateOnly.FromDateTime(dateTime);
+        if (date < minDate || date > maxDate)
+        {
+            throw new DateTimeOutOfRangeException(minDate, maxDate, dateTime);
         }
     }
 
@@ -112,7 +143,6 @@ public static class Guard
 
         throw new GroupCycleException(typeof(TGroup));
     }
-
 
     public static void CheckIsRoot<TGroup, TElement>(TGroup group)
         where TGroup : class, IGroupEntity<TGroup, TElement>

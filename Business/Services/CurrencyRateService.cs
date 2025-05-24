@@ -5,6 +5,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
+using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
@@ -23,8 +24,8 @@ internal class CurrencyRateService : ICurrencyRateService
         ISystemConfigRepository systemConfigRepository = unitOfWork.GetRepository<ISystemConfigRepository>();
         ICurrencyRateRepository currencyRateRepository = unitOfWork.GetRepository<ICurrencyRateRepository>();
 
-        CheckParamRate(param);
-        await CheckParamDate(param, systemConfigRepository);
+        Guard.CheckCurrencyRate(param.Rate);
+        await Guard.CheckDate(systemConfigRepository, param.Date);
 
         CurrencyRate currencyRate = await Guard.CheckAndGetEntityById(
             g => currencyRateRepository.GetRateOnDate(g, DateOnly.FromDateTime(DateTime.Today)),
@@ -71,23 +72,5 @@ internal class CurrencyRateService : ICurrencyRateService
         await currencyRateRepository.Delete(currencyRates.Select(e => e.Id).ToList());
 
         await unitOfWork.SaveChanges();
-    }
-
-    private static void CheckParamRate(CurrencyRateParam param)
-    {
-        if (param.Rate <= 0)
-        {
-            throw new InvalidCurrencyRateException(param.Rate);
-        }
-    }
-
-    private static async Task CheckParamDate(CurrencyRateParam param, ISystemConfigRepository systemConfigRepository)
-    {
-        DateOnly minDate = await systemConfigRepository.GetMinDate();
-        DateOnly maxDate = await systemConfigRepository.GetMaxDate();
-        if (param.Date < minDate || param.Date > maxDate)
-        {
-            throw new DateTimeOutOfRangeException(minDate, maxDate, param.Date);
-        }
     }
 }
