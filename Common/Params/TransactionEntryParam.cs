@@ -1,6 +1,4 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
-
-namespace GLSoft.DoubleEntryHomeAccounting.Common.Params;
+﻿namespace GLSoft.DoubleEntryHomeAccounting.Common.Params;
 
 public class TransactionEntryParam
 {

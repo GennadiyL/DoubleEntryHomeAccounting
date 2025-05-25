@@ -1,10 +1,8 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models.Interfaces;
-using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
 
-public interface IEntityService<T, in TParam>
-    where T : IEntity
+public interface IEntityService<in TParam>
     where TParam : IParam
 {
     Task<Guid> Add(TParam param);

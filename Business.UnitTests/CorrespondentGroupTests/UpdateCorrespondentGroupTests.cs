@@ -6,7 +6,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
 using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using NSubstitute;
-using NSubstitute.ReceivedExtensions;
 
 namespace Business.UnitTests.CorrespondentGroupTests;
 

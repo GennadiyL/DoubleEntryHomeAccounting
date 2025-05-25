@@ -1,7 +1,4 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Common.Models;
-using GLSoft.DoubleEntryHomeAccounting.Common.Params;
-using GLSoft.DoubleEntryHomeAccounting.Common.Params.Interfaces;
-using GLSoft.DoubleEntryHomeAccounting.Common.Services.Base;
+﻿using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Common.Services;
 

@@ -9,7 +9,6 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
-//TODO: Review
 public class TransactionService : ITransactionService
 {
     private readonly IUnitOfWorkFactory _unitOfWorkFactory;

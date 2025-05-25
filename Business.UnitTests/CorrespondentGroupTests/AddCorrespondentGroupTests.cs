@@ -62,10 +62,10 @@ public class AddCorrespondentGroupTests
         };
         Guid id = await _service.Add(param);
 
-        Assert.IsNotNull(entity);
+        Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Id, Is.EqualTo(id));
-        Assert.IsTrue(ReferenceEquals(parent, entity.Parent));
-        Assert.IsTrue(parent.Children.Contains(entity));
+        Assert.That(ReferenceEquals(parent, entity.Parent), Is.True);
+        Assert.That(parent.Children.Contains(entity), Is.True);
 
         Assert.That(name, Is.EqualTo(param.Name));
         Assert.That(entity.Description, Is.EqualTo(description));
@@ -93,7 +93,7 @@ public class AddCorrespondentGroupTests
         };
         await _service.Add(param);
 
-        Assert.IsNotNull(entity);
+        Assert.That(entity, Is.Not.Null);
         Assert.That(entity.Parent, Is.EqualTo(null));
 
         Assert.That(name, Is.EqualTo(param.Name));

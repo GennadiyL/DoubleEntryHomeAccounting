@@ -178,7 +178,6 @@ public abstract class GroupService<TGroup, TElement, TParam> : IGroupService<TGr
         IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
 
         IElementRepository<TGroup, TElement> elementRepository = unitOfWork.GetRepository<IElementRepository<TGroup, TElement>>();
-        IGroupRepository<TGroup, TElement> groupRepository = unitOfWork.GetRepository<IGroupRepository<TGroup, TElement>>();
 
         TGroup toGroup = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, toGroupId);
         TGroup fromGroup = await Guard.CheckAndGetEntityById(elementRepository.GetGroupWithElementsByGroupId, fromGroupId);

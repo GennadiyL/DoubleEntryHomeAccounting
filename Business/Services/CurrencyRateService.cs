@@ -3,9 +3,7 @@ using GLSoft.DoubleEntryHomeAccounting.Common.Params;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Check;
-using GLSoft.DoubleEntryHomeAccounting.Common.Exceptions;
 using GLSoft.DoubleEntryHomeAccounting.Common.Models;
-using GLSoft.DoubleEntryHomeAccounting.Common.Utils.Currency;
 
 namespace GLSoft.DoubleEntryHomeAccounting.Business.Services;
 
