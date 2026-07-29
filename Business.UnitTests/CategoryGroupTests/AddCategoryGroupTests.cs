@@ -21,7 +21,6 @@ public class AddCategoryGroupTests
     public void SetUp()
     {
         _groupRepository = Substitute.For<ICategoryGroupRepository>();
-
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _unitOfWork.GetRepository<IGroupRepository<CategoryGroup, Category>>().Returns(_groupRepository);
 
@@ -37,20 +36,35 @@ public class AddCategoryGroupTests
     }
 
     [TestCase("Name", "Description", true, 6)]
-    [TestCase("Andy", "", false, 12001)]
+    [TestCase("Andy", "", false, 12)]
     [TestCase("StringName", "Words about CategoryGroup", true, 0)]
     public async Task AddCategoryGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
     {
         CategoryGroup parent = new CategoryGroup
         {
             Id = Guid.NewGuid(),
-            Name = "Group"
+            Name = "Group",
+            Description = "GroupDescription",
         };
+        
+        for (int i = 0; i < maxOrder; i++)
+        {
+            parent.Children.Add(new CategoryGroup
+            {
+                Id = Guid.NewGuid(),
+                Name = "Foo",
+                IsFavorite = false,
+                Description = "Description",    
+                Order = i + i,
+                Parent = parent,
+                ParentId = parent.Id
+            });
+        }
+        
         CategoryGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);
         _groupRepository.GetParentWithChildrenByParentId(parent.Id).Returns(parent);
-        _groupRepository.GetMaxOrderInParent(parent.Id).Returns(maxOrder);
         await _groupRepository.Add(Arg.Do<CategoryGroup>(p => entity = p));
 
         GroupParam param = new GroupParam
@@ -60,6 +74,7 @@ public class AddCategoryGroupTests
             IsFavorite = isFavorite,
             ParentId = parent.Id,
         };
+        
         Guid id = await _service.Add(param);
 
         Assert.That(entity, Is.Not.Null);

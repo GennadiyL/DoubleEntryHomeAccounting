@@ -1,4 +1,5 @@
-﻿using GLSoft.DoubleEntryHomeAccounting.Business.Services;
+﻿using System.Diagnostics;
+using GLSoft.DoubleEntryHomeAccounting.Business.Services;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories;
 using GLSoft.DoubleEntryHomeAccounting.Common.DataAccess.Repositories.Base;
@@ -41,11 +42,14 @@ public class AddAccountGroupTests
     [TestCase("StringName", "Words about AccountGroup", true, 0)]
     public async Task AddAccountGroupPositiveTest(string name, string description, bool isFavorite, int maxOrder)
     {
+        Console.WriteLine("Test1");
         AccountGroup parent = new AccountGroup
         {
             Id = Guid.NewGuid(),
             Name = "Group"
         };
+        Debug.WriteLine("Test2");
+        Trace.WriteLine("Test3");
         AccountGroup entity = null;
 
         _groupRepository.GetById(parent.Id).Returns(parent);

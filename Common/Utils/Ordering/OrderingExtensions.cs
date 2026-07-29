@@ -46,6 +46,6 @@ public static class OrderingExtensions
 
     public static int GetMaxOrder<T>(this ICollection<T> entities) where T : IOrderedEntity
     {
-        return entities.Max(e => e.Order);
+        return entities.Count() == 0 ? 0 : entities.Max(i => i.Order);
     }
 }

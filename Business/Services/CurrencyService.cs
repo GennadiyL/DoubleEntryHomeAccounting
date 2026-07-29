@@ -118,7 +118,7 @@ public class CurrencyService : ICurrencyService
 
     public async Task SetFavoriteStatus(Guid entityId, bool isFavorite)
     {
-        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();
+        IUnitOfWork unitOfWork = _unitOfWorkFactory.Create();   
 
         ICurrencyRepository currencyRepository = unitOfWork.GetRepository<ICurrencyRepository>();
 
